@@ -1,0 +1,767 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { IconX } from "@tabler/icons-react";
+import { useSearchParams } from "react-router-dom";
+import meetingsService from "../../../../api/services/meetingsService";
+import { useAuth } from "../../../../context/AuthContext";
+import { useNotifications } from "../../../../context/NotificationsContext";
+import "./styles.css";
+
+const STATUS_TABS = [
+  { label: "En proceso", value: "PROGRAMADA" },
+  { label: "Activa", value: "EN_CURSO" },
+  { label: "Cancelada", value: "CANCELADA" },
+  { label: "Finalizada", value: "FINALIZADA" },
+];
+
+const STATUS_LABELS = {
+  PROGRAMADA: "En proceso",
+  EN_CURSO: "Activa",
+  CANCELADA: "Cancelada",
+  FINALIZADA: "Finalizada",
+};
+
+const EMPTY_POINT_FORM = { description: "", title: "" };
+
+const formatDate = (value) => {
+  if (!value) return "Sin fecha";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Sin fecha";
+  return parsed.toLocaleString("es-VE", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/Caracas",
+  });
+};
+
+const formatChatDate = (value) => {
+  if (!value) return "Ahora";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Ahora";
+  return parsed.toLocaleString("es-VE", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "America/Caracas",
+  });
+};
+
+const PREVIOUS_MINUTE_TITLE = "lectura del acta anterior";
+
+const isPreviousMinutePoint = (point) =>
+  Boolean(point?.isBasePoint) &&
+  (point?.title || "").trim().toLowerCase() === PREVIOUS_MINUTE_TITLE;
+
+const canMeetingReceivePoints = (meeting) => {
+  if (!meeting) return false;
+  if (meeting.isClosed || meeting.agendaConsolidated) return false;
+  return !["CANCELADA", "FINALIZADA"].includes(meeting.status);
+};
+
+const isInConfirmationWindow = (meeting) => {
+  if (!meeting) return false;
+  if (["CANCELADA", "FINALIZADA"].includes(meeting.status)) return false;
+  const now = Date.now();
+  const meetingTime = new Date(meeting.date).getTime();
+  const windowStart = new Date(meeting.attendanceOpensAt || meetingTime - 15 * 60 * 1000).getTime();
+  const windowEnd = new Date(meeting.attendanceClosesAt || meeting.date).getTime();
+  return now >= windowStart && now <= windowEnd;
+};
+
+const Actas = () => {
+  const { user } = useAuth();
+  const { setIsPanelOpen } = useNotifications();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [meetings, setMeetings] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState("PROGRAMADA");
+  const [detailMeetingId, setDetailMeetingId] = useState(null);
+  const [isPointPanelOpen, setIsPointPanelOpen] = useState(false);
+  const [pointPanelMeetingId, setPointPanelMeetingId] = useState(null);
+  const [pointForm, setPointForm] = useState(EMPTY_POINT_FORM);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pageMessage, setPageMessage] = useState("");
+  const [panelMessage, setPanelMessage] = useState("");
+  const [attendanceMsg, setAttendanceMsg] = useState("");
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatDraft, setChatDraft] = useState("");
+  const [chatError, setChatError] = useState("");
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [isChatSending, setIsChatSending] = useState(false);
+
+  const canSubmitByRole = ["DOCENTE", "SECRETARIO"].includes(user?.role || "");
+  const canReview = ["ADMIN", "SECRETARIO"].includes(user?.role || "");
+  const canConfirmAttendanceForUser = ["ADMIN", "DOCENTE", "SECRETARIO"].includes(user?.role || "");
+  const canUseChat = ["ADMIN", "DOCENTE", "SECRETARIO"].includes(user?.role || "");
+
+  const detailMeeting = useMemo(
+    () => meetings.find((m) => m.id === detailMeetingId) || null,
+    [meetings, detailMeetingId],
+  );
+
+  const pointPanelMeeting = useMemo(
+    () => meetings.find((m) => m.id === pointPanelMeetingId) || null,
+    [meetings, pointPanelMeetingId],
+  );
+
+  const filteredMeetings = useMemo(
+    () => meetings.filter((m) => m.status === selectedStatus),
+    [meetings, selectedStatus],
+  );
+
+  const getCountByStatus = (status) =>
+    meetings.filter((m) => m.status === status).length;
+
+  const myPointsInMeeting = (meeting) => {
+    if (!meeting?.agendaPoints) return [];
+    return meeting.agendaPoints.filter((p) => p.proposerId === user?.id);
+  };
+
+  const loadMeetings = async () => {
+    setIsLoading(true);
+    try {
+      const response = await meetingsService.list();
+      const list = Array.isArray(response) ? response : [];
+      setMeetings(
+        [...list].sort(
+          (a, b) => new Date(b?.date || 0) - new Date(a?.date || 0),
+        ),
+      );
+    } catch {
+      setPageMessage("No se pudo cargar la lista de reuniones.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMeetings();
+  }, []);
+
+  useEffect(() => {
+    const meetingIdFromQuery = searchParams.get("meeting");
+    if (!meetingIdFromQuery || meetings.length === 0) return;
+
+    const targetMeeting = meetings.find((meeting) => meeting.id === meetingIdFromQuery);
+    if (targetMeeting) {
+      setDetailMeetingId(targetMeeting.id);
+      setAttendanceMsg("");
+      setChatDraft("");
+      setChatError("");
+      setIsPointPanelOpen(false);
+      setPointPanelMeetingId(null);
+      setIsPanelOpen(false);
+      setIsChatLoading(true);
+      meetingsService
+        .listMeetingChatMessages(targetMeeting.id)
+        .then((messages) => {
+          setChatMessages(Array.isArray(messages) ? messages : []);
+        })
+        .catch(() => {
+          setChatError("No se pudo cargar el chat de esta reunión.");
+          setChatMessages([]);
+        })
+        .finally(() => {
+          setIsChatLoading(false);
+        });
+    }
+  }, [meetings, searchParams, setIsPanelOpen]);
+
+  useEffect(() => {
+    if (!isPointPanelOpen && !detailMeetingId) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [detailMeetingId, isPointPanelOpen]);
+
+  const openDetail = (meeting) => {
+    setDetailMeetingId(meeting.id);
+    setAttendanceMsg("");
+    setChatDraft("");
+    setChatError("");
+    setIsPointPanelOpen(false);
+    setPointPanelMeetingId(null);
+    setSearchParams({ meeting: meeting.id });
+    setIsChatLoading(true);
+    meetingsService
+      .listMeetingChatMessages(meeting.id)
+      .then((messages) => {
+        setChatMessages(Array.isArray(messages) ? messages : []);
+      })
+      .catch(() => {
+        setChatError("No se pudo cargar el chat de esta reunión.");
+        setChatMessages([]);
+      })
+      .finally(() => {
+        setIsChatLoading(false);
+      });
+  };
+
+  const closeDetail = () => {
+    setDetailMeetingId(null);
+    setAttendanceMsg("");
+    setChatMessages([]);
+    setChatDraft("");
+    setChatError("");
+    if (searchParams.get("meeting")) {
+      setSearchParams({});
+    }
+  };
+
+  const handleSendChatMessage = async (e) => {
+    e.preventDefault();
+    if (!detailMeeting?.id || !canUseChat) return;
+    const content = chatDraft.trim();
+    if (!content) return;
+
+    setIsChatSending(true);
+    setChatError("");
+    try {
+      const created = await meetingsService.postMeetingChatMessage(detailMeeting.id, { content });
+      setChatMessages((prev) => [...prev, created]);
+      setChatDraft("");
+    } catch (err) {
+      setChatError(err?.response?.data?.message || "No se pudo enviar el mensaje.");
+    } finally {
+      setIsChatSending(false);
+    }
+  };
+
+  const openPointPanel = (meetingId) => {
+    setPointPanelMeetingId(meetingId);
+    setPointForm(EMPTY_POINT_FORM);
+    setPanelMessage("");
+    setIsPointPanelOpen(true);
+    setDetailMeetingId(null);
+  };
+
+  const closePointPanel = () => {
+    setIsPointPanelOpen(false);
+    setPanelMessage("");
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.currentTarget;
+    setPointForm((prev) => ({ ...prev, [name]: value }));
+    setPanelMessage("");
+  };
+
+  const handleSubmitPoint = async (e) => {
+    e.preventDefault();
+    if (!pointPanelMeeting?.id || !canSubmitByRole) return;
+    if (!canMeetingReceivePoints(pointPanelMeeting)) {
+      setPanelMessage("La reunión ya no admite nuevos puntos.");
+      return;
+    }
+    const myPoints = myPointsInMeeting(pointPanelMeeting);
+    if (myPoints.length >= 2) {
+      setPanelMessage("Ya alcanzaste el máximo de 2 puntos para esta reunión.");
+      return;
+    }
+    setIsSubmitting(true);
+    setPanelMessage("");
+    try {
+      await meetingsService.proposePoint(pointPanelMeeting.id, {
+        description: pointForm.description.trim(),
+        title: pointForm.title.trim(),
+      });
+      setPointForm(EMPTY_POINT_FORM);
+      setPanelMessage("Tu punto fue enviado a Secretaría para revisión.");
+      await loadMeetings();
+    } catch (err) {
+      setPanelMessage(
+        err?.response?.data?.message || "No se pudo enviar el punto.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReviewPoint = async (pointId, status) => {
+    if (!detailMeeting?.id || !canReview) return;
+    setIsSubmitting(true);
+    try {
+      await meetingsService.reviewPoint(detailMeeting.id, pointId, { status });
+      await loadMeetings();
+    } catch (err) {
+      setAttendanceMsg(
+        err?.response?.data?.message || "No se pudo completar la revisión.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmAttendance = async () => {
+    if (!detailMeeting?.id) return;
+    setIsSubmitting(true);
+    setAttendanceMsg("");
+    try {
+      await meetingsService.confirmAttendance(detailMeeting.id);
+      await loadMeetings();
+      setAttendanceMsg("Tu asistencia ha sido confirmada y registrada como presente.");
+    } catch (err) {
+      setAttendanceMsg(
+        err?.response?.data?.message ||
+          "No se pudo confirmar la asistencia. Inténtalo de nuevo.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const detailApprovedPoints = useMemo(() => {
+    if (!detailMeeting?.agendaPoints) return [];
+    return detailMeeting.agendaPoints.filter((p) => p.status === "APROBADO");
+  }, [detailMeeting]);
+
+  const detailPendingPoints = useMemo(() => {
+    if (!detailMeeting?.agendaPoints) return [];
+    return detailMeeting.agendaPoints.filter(
+      (p) => p.status === "PENDIENTE" && p.proposerId !== user?.id,
+    );
+  }, [detailMeeting, user?.id]);
+
+  const getAttendanceStateForUser = (meeting, userId) => {
+    if (!meeting?.attendance) return { isConfirmed: false, isInvited: false };
+    const entry = meeting.attendance.find((item) => item?.userId === userId);
+    return {
+      isConfirmed: entry && ["PRESENTE", "JUSTIFICADA"].includes(entry?.status),
+      isInvited: Boolean(entry),
+    };
+  };
+
+  return (
+    <div className="reunionesContainer">
+      <aside className="reunionesSidebar">
+        <div className="reunionesSidebarHeader">
+          <h3>Estado</h3>
+        </div>
+        <ul className="reunionesStatusList">
+          {STATUS_TABS.map((tab) => (
+            <li key={tab.value} className="reunionesStatusItem">
+              <button
+                className={`reunionesStatusBtn ${selectedStatus === tab.value ? "active" : ""}`}
+                onClick={() => setSelectedStatus(tab.value)}
+                type="button"
+              >
+                <span>{tab.label}</span>
+                <span className="reunionesBadge">{getCountByStatus(tab.value)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+      <main className="reunionesMain">
+        <header className="reunionesMainHeader">
+          <div>
+            <h2>Reuniones</h2>
+            <p>
+              {STATUS_LABELS[selectedStatus]} — {filteredMeetings.length}{" "}
+              {filteredMeetings.length === 1 ? "reunión" : "reuniones"}
+            </p>
+          </div>
+        </header>
+
+        {pageMessage && <div className="reunionesMessage">{pageMessage}</div>}
+
+        {isLoading && (
+          <div className="reunionesMessage">Cargando reuniones...</div>
+        )}
+
+        {!isLoading && filteredMeetings.length === 0 && (
+          <div className="reunionesEmpty">
+            No hay reuniones en estado "{STATUS_LABELS[selectedStatus]}".
+          </div>
+        )}
+
+        {!isLoading && filteredMeetings.length > 0 && (
+          <ul className="reunionesList">
+            {filteredMeetings.map((meeting) => {
+              const myPoints = myPointsInMeeting(meeting);
+              const canAddPoint =
+                canSubmitByRole &&
+                canMeetingReceivePoints(meeting) &&
+                myPoints.length < 2;
+
+              const attendanceState = getAttendanceStateForUser(meeting, user?.id);
+
+              return (
+                <li key={meeting.id} className="reunionCard">
+                  <div className="reunionCardTop">
+                    <span
+                      className={`reunionStatusBadge reunionStatusBadge--${(meeting.status || "").toLowerCase()}`}
+                    >
+                      {STATUS_LABELS[meeting.status] || meeting.status}
+                    </span>
+                    {canConfirmAttendanceForUser && isInConfirmationWindow(meeting) && !attendanceState.isConfirmed && (
+                      <span className="reunionWindowTag">Ventana de asistencia abierta</span>
+                    )}
+                  </div>
+                  <h3 className="reunionCardTitle">{meeting.title}</h3>
+                  <div className="reunionCardMeta">
+                    <span>{formatDate(meeting.date)}</span>
+                    <span>{meeting.location || "Sin lugar"}</span>
+                    <span>{meeting.modality || "—"}</span>
+                  </div>
+                  {meeting.status === "CANCELADA" && (
+                    <p className="reunionCardCancelled">
+                      Cancelada: {meeting.cancellationReason || "Sin motivo registrado"}
+                    </p>
+                  )}
+                  <div className="reunionCardActions">
+                    {canAddPoint && (
+                      <button
+                        className="reunionBtn reunionBtn--secondary"
+                        onClick={() => openPointPanel(meeting.id)}
+                        type="button"
+                      >
+                        Agregar punto
+                      </button>
+                    )}
+                    <button
+                      className="reunionBtn reunionBtn--primary"
+                      onClick={() => openDetail(meeting)}
+                      type="button"
+                    >
+                      Ver detalle
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </main>
+
+      {detailMeeting && (
+        <>
+          <div className="reunionesBackdrop" onClick={closeDetail} />
+          <aside className="reunionesDetailPanel" role="dialog" aria-modal="true">
+            <div className="reunionesDetailHeader">
+              <div>
+                <div className="reunionesDetailTitleRow">
+                  <h3>{detailMeeting.title}</h3>
+                  <span
+                    className={`reunionStatusBadge reunionStatusBadge--${(detailMeeting.status || "").toLowerCase()}`}
+                  >
+                    {STATUS_LABELS[detailMeeting.status] || detailMeeting.status}
+                  </span>
+                </div>
+              </div>
+              <button
+                aria-label="Cerrar detalle"
+                className="reunionesCloseBtn"
+                onClick={closeDetail}
+                type="button"
+              >
+                <IconX size={18} />
+              </button>
+            </div>
+
+            <div className="reunionesDetailBody">
+              <div className="reunionesInfoGrid">
+                <div className="reunionesInfoItem">
+                  <span className="reunionesInfoLabel">Fecha y hora</span>
+                  <span className="reunionesInfoValue">
+                    {formatDate(detailMeeting.date)}
+                  </span>
+                </div>
+                <div className="reunionesInfoItem">
+                  <span className="reunionesInfoLabel">Lugar</span>
+                  <span className="reunionesInfoValue">
+                    {detailMeeting.location || "Sin lugar"}
+                  </span>
+                </div>
+                <div className="reunionesInfoItem">
+                  <span className="reunionesInfoLabel">Modalidad</span>
+                  <span className="reunionesInfoValue">
+                    {detailMeeting.modality || "—"}
+                  </span>
+                </div>
+                <div className="reunionesInfoItem">
+                  <span className="reunionesInfoLabel">Agenda</span>
+                  <span className="reunionesInfoValue">
+                    {detailMeeting.agendaConsolidated
+                      ? "Consolidada"
+                      : "Abierta para puntos"}
+                  </span>
+                </div>
+                {detailMeeting.description && (
+                  <div className="reunionesInfoItem reunionesInfoItem--full">
+                    <span className="reunionesInfoLabel">Descripción</span>
+                    <span className="reunionesInfoValue">
+                      {detailMeeting.description}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {detailMeeting.status === "CANCELADA" && (
+                <div className="reunionesCancelledNotice">
+                  <span className="reunionesInfoLabel">Motivo de cancelación</span>
+                  <p className="reunionesCancelledReason">
+                    {detailMeeting.cancellationReason || "No se registró un motivo."}
+                  </p>
+                  <p className="reunionesCancelledMeta">
+                    Cancelada por {detailMeeting.cancelledBy?.name || "—"}
+                    {detailMeeting.cancelledAt
+                      ? ` · ${formatDate(detailMeeting.cancelledAt)}`
+                      : ""}
+                  </p>
+                </div>
+              )}
+
+              {detailApprovedPoints.length > 0 && (
+                <section className="reunionesSection">
+                  <h4 className="reunionesSectionTitle">Puntos de agenda aprobados</h4>
+                  <ul className="reunionesPointsList">
+                    {detailApprovedPoints.map((point) => (
+                      <li key={point.id} className="reunionesPointItem">
+                        <strong>{point.title}</strong>
+                        <p>{point.description}</p>
+                        {isPreviousMinutePoint(point) &&
+                          detailMeeting.previousMinute &&
+                          detailMeeting.previousMinute.points.length > 0 && (
+                            <div className="reunionesPreviousMinute">
+                              <span className="reunionesPreviousMinuteLabel">
+                                Puntos pendientes del acta anterior
+                                {detailMeeting.previousMinute.date
+                                  ? ` (${formatDate(detailMeeting.previousMinute.date)})`
+                                  : ""}
+                                :
+                              </span>
+                              <ol className="reunionesPreviousMinuteList">
+                                {detailMeeting.previousMinute.points.map((prev, index) => (
+                                  <li key={index}>
+                                    <strong>{prev.title}</strong>
+                                    {prev.description ? <span> — {prev.description}</span> : null}
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          )}
+                        <span className="reunionesPointAuthor">
+                          {point.proposer?.name || "Coordinación"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {canReview && detailPendingPoints.length > 0 && (
+                <section className="reunionesSection">
+                  <h4 className="reunionesSectionTitle">Puntos pendientes por revisar</h4>
+                  <ul className="reunionesPointsList">
+                    {detailPendingPoints.map((point) => (
+                      <li key={point.id} className="reunionesPointItem">
+                        <strong>{point.title}</strong>
+                        <p>{point.description}</p>
+                        <span className="reunionesPointAuthor">
+                          {point.proposer?.name || "Sin autor"}
+                        </span>
+                        <div className="reunionesReviewActions">
+                          <button
+                            disabled={isSubmitting}
+                            onClick={() => handleReviewPoint(point.id, "RECHAZADO")}
+                            type="button"
+                          >
+                            Rechazar
+                          </button>
+                          <button
+                            disabled={isSubmitting}
+                            onClick={() => handleReviewPoint(point.id, "APROBADO")}
+                            type="button"
+                          >
+                            Aprobar
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              <section className="reunionesSection">
+                <h4 className="reunionesSectionTitle">Chat de la reunión</h4>
+
+                {isChatLoading ? (
+                  <div className="reunionesMessage">Cargando conversación...</div>
+                ) : chatMessages.length === 0 ? (
+                  <div className="reunionesMessage">Aún no hay mensajes en esta reunión.</div>
+                ) : (
+                  <ul className="reunionesChatList">
+                    {chatMessages.map((message) => {
+                      const isOwn = message?.author?.id === user?.id;
+                      return (
+                        <li
+                          key={message.id}
+                          className={`reunionesChatItem ${isOwn ? "reunionesChatItem--own" : ""}`}
+                        >
+                          <div className="reunionesChatMeta">
+                            <strong>{message?.author?.name || "Usuario"}</strong>
+                            <span>{formatChatDate(message?.createdAt)}</span>
+                          </div>
+                          <p>{message?.content || ""}</p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+
+                {canUseChat && (
+                  <form className="reunionesChatForm" onSubmit={handleSendChatMessage}>
+                    <textarea
+                      maxLength={2000}
+                      onChange={(e) => setChatDraft(e.target.value)}
+                      placeholder="Escribe un mensaje para esta reunión"
+                      rows={3}
+                      value={chatDraft}
+                    />
+                    <div className="reunionesChatActions">
+                      <button
+                        className="reunionBtn reunionBtn--primary"
+                        disabled={isChatSending || !chatDraft.trim()}
+                        type="submit"
+                      >
+                        {isChatSending ? "Enviando..." : "Enviar mensaje"}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {chatError && <p className="reunionesAttendanceError">{chatError}</p>}
+              </section>
+
+              {(() => {
+                const attendanceState = getAttendanceStateForUser(detailMeeting, user?.id);
+                const attendanceOpened = isInConfirmationWindow(detailMeeting);
+                if (!attendanceOpened && !detailMeeting?.attendanceFinalized) {
+                  return null;
+                }
+                return (
+                  <section className="reunionesSection reunionesAttendanceSection">
+                    <h4 className="reunionesSectionTitle">Confirmar asistencia</h4>
+                    <p className="reunionesAttendanceText">
+                      {detailMeeting?.attendanceFinalized
+                        ? "La ventana de asistencia ya cerró. Se registró la asistencia pendiente como ausente."
+                        : detailMeeting.status === "EN_CURSO"
+                          ? "La reunión está en curso. Confirma tu asistencia para registrar tu participación."
+                          : "La reunión comenzará pronto. Puedes confirmar tu asistencia hasta 15 minutos antes."}
+                    </p>
+                    {!attendanceOpened && detailMeeting?.attendanceFinalized ? (
+                      <div className="reunionesAttendanceError">
+                        La asistencia ya no está abierta para nuevos registros.
+                      </div>
+                    ) : !canConfirmAttendanceForUser ? (
+                      <div className="reunionesAttendanceError">
+                        Solo los docentes y secretarios del sistema pueden confirmar asistencia desde aquí. Los participantes externos se registran en la hoja o imagen cargada al finalizar la reunión.
+                      </div>
+                    ) : attendanceState.isConfirmed ? (
+                      <div className="reunionesAttendanceSuccess">
+                        Asistencia confirmada correctamente.
+                      </div>
+                    ) : (
+                      <button
+                        className="reunionesConfirmBtn"
+                        disabled={isSubmitting}
+                        onClick={handleConfirmAttendance}
+                        type="button"
+                      >
+                        {isSubmitting ? "Confirmando..." : "Confirmar mi asistencia"}
+                      </button>
+                    )}
+                    {attendanceMsg && !attendanceState.isConfirmed && (
+                      <p className="reunionesAttendanceError">{attendanceMsg}</p>
+                    )}
+                  </section>
+                );
+              })()}
+            </div>
+
+            <div className="reunionesDetailFooter">
+              <button
+                className="reunionBtn reunionBtn--secondary"
+                onClick={closeDetail}
+                type="button"
+              >
+                Cerrar
+              </button>
+            </div>
+          </aside>
+        </>
+      )}
+
+      {isPointPanelOpen && pointPanelMeeting && (
+        <>
+          <div className="reunionesBackdrop" onClick={closePointPanel} />
+          <aside className="reunionesPointPanel" role="dialog" aria-modal="true">
+            <div className="reunionesDetailHeader">
+              <div>
+                <h3>Agregar punto</h3>
+                <p>{pointPanelMeeting.title}</p>
+              </div>
+              <button
+                aria-label="Cerrar panel"
+                className="reunionesCloseBtn"
+                onClick={closePointPanel}
+                type="button"
+              >
+                <IconX size={18} />
+              </button>
+            </div>
+
+            <form className="reunionesPointForm" onSubmit={handleSubmitPoint}>
+              <div className="reunionesField">
+                <label htmlFor="point-title">Título</label>
+                <input
+                  id="point-title"
+                  maxLength={120}
+                  minLength={4}
+                  name="title"
+                  onChange={handleChange}
+                  placeholder="Ej: Seguimiento del Plan de Captación"
+                  required
+                  value={pointForm.title}
+                />
+              </div>
+              <div className="reunionesField">
+                <label htmlFor="point-description">Descripción</label>
+                <textarea
+                  id="point-description"
+                  maxLength={1500}
+                  minLength={10}
+                  name="description"
+                  onChange={handleChange}
+                  placeholder="Detalla el punto que deseas discutir en la reunión"
+                  required
+                  rows={5}
+                  value={pointForm.description}
+                />
+              </div>
+              <span className="reunionesPointsCounter">
+                Mis puntos: {myPointsInMeeting(pointPanelMeeting).length}/2
+              </span>
+              {panelMessage && (
+                <div className="reunionesMessage">{panelMessage}</div>
+              )}
+              <div className="reunionesFormActions">
+                <button
+                  className="reunionBtn reunionBtn--primary"
+                  disabled={isSubmitting}
+                  type="submit"
+                >
+                  {isSubmitting ? "Enviando..." : "Enviar punto"}
+                </button>
+              </div>
+            </form>
+          </aside>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default Actas;

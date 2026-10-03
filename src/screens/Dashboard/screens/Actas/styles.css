@@ -1,0 +1,715 @@
+.reunionesContainer {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+}
+
+/* ── Secondary sidebar ── */
+.reunionesSidebar {
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-height: 100%;
+  padding: 16px 0;
+  width: 200px;
+}
+
+.reunionesSidebarHeader {
+  padding: 0 16px 12px;
+}
+
+.reunionesSidebarHeader h3 {
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.reunionesStatusList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0 8px;
+}
+
+.reunionesStatusItem {
+  width: 100%;
+}
+
+.reunionesStatusBtn {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  font-size: 0.88rem;
+  font-weight: 500;
+  gap: 8px;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 0 10px;
+  transition: background 0.15s, color 0.15s;
+  width: 100%;
+}
+
+.reunionesStatusBtn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.reunionesStatusBtn.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.reunionesBadge {
+  background: #e2e8f0;
+  border-radius: 999px;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 700;
+  min-width: 20px;
+  padding: 2px 6px;
+  text-align: center;
+}
+
+.reunionesStatusBtn.active .reunionesBadge {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* ── Main content ── */
+.reunionesMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.reunionesMainHeader h2 {
+  color: #0f172a;
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.reunionesMainHeader p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 4px 0 0;
+}
+
+.reunionesMessage {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  color: #1d4ed8;
+  padding: 12px;
+}
+
+.reunionesEmpty {
+  color: #64748b;
+  padding: 32px 0;
+  text-align: center;
+}
+
+/* ── Meeting cards ── */
+.reunionesList {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reunionCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  transition: box-shadow 0.15s;
+}
+
+.reunionCard:hover {
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.09);
+}
+
+.reunionCardTop {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reunionWindowTag {
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  border-radius: 999px;
+  color: #854d0e;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 8px;
+}
+
+.reunionCardTitle {
+  color: #0f172a;
+  font-size: 0.98rem;
+  margin: 0;
+}
+
+.reunionCardMeta {
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.84rem;
+  gap: 4px;
+}
+
+.reunionCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* ── Status badges ── */
+.reunionStatusBadge {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 4px 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.reunionStatusBadge--programada {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.reunionStatusBadge--en_curso {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.reunionStatusBadge--cancelada {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.reunionStatusBadge--finalizada {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* ── Cancellation notice ── */
+.reunionesCancelledNotice {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+}
+
+.reunionesCancelledReason {
+  color: #991b1b;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.reunionesCancelledMeta {
+  color: #b45151;
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.reunionCardCancelled {
+  color: #991b1b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 8px 0 0;
+}
+
+/* ── Orden del día del acta anterior (anidado bajo "Lectura del acta anterior") ── */
+.reunionesPreviousMinute {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #2563eb;
+  border-radius: 8px;
+  margin: 8px 0 4px;
+  padding: 10px 12px;
+}
+
+.reunionesPreviousMinuteLabel {
+  color: #1d4ed8;
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.reunionesPreviousMinuteList {
+  color: #334155;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.reunionesPreviousMinuteList li {
+  margin-bottom: 4px;
+}
+
+.reunionesPreviousMinuteList strong {
+  color: #0f172a;
+}
+
+/* ── Buttons ── */
+.reunionBtn {
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 600;
+  min-height: 36px;
+  padding: 0 14px;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.reunionBtn--primary {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.reunionBtn--primary:hover {
+  background: #1e40af;
+}
+
+.reunionBtn--secondary {
+  background: #f8fafc;
+  border-color: #d1d5db;
+  color: #334155;
+}
+
+.reunionBtn--secondary:hover {
+  background: #f1f5f9;
+}
+
+/* ── Backdrop ── */
+.reunionesBackdrop {
+  background: rgba(15, 23, 42, 0.38);
+  inset: 0;
+  position: fixed;
+  z-index: 1000;
+}
+
+/* ── Detail panel ── */
+.reunionesDetailPanel,
+.reunionesPointPanel {
+  background: #ffffff;
+  box-shadow: -16px 0 32px rgba(15, 23, 42, 0.14);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 480px;
+  overflow-y: auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: min(100%, 480px);
+  z-index: 1001;
+}
+
+.reunionesDetailHeader {
+  align-items: flex-start;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.reunionesDetailTitleRow {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reunionesDetailHeader h3 {
+  color: #0f172a;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.reunionesDetailHeader p {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin: 4px 0 0;
+}
+
+.reunionesCloseBtn {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.reunionesDetailBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.reunionesInfoGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.reunionesInfoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reunionesInfoItem--full {
+  grid-column: 1 / -1;
+}
+
+.reunionesInfoLabel {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.reunionesInfoValue {
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+/* ── Sections inside detail panel ── */
+.reunionesSection {
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+}
+
+.reunionesSectionTitle {
+  color: #0f172a;
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reunionesPointsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reunionesPointItem {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+}
+
+.reunionesPointItem strong {
+  color: #0f172a;
+  font-size: 0.88rem;
+}
+
+.reunionesPointItem p {
+  color: #334155;
+  font-size: 0.84rem;
+  margin: 0;
+}
+
+.reunionesPointAuthor {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.reunionesReviewActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.reunionesReviewActions button {
+  border: 1px solid;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  min-height: 32px;
+  padding: 0 12px;
+}
+
+.reunionesReviewActions button:first-child {
+  background: #ffffff;
+  border-color: #d1d5db;
+  color: #475569;
+}
+
+.reunionesReviewActions button:last-child {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.reunionesReviewActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ── Attendance section ── */
+.reunionesAttendanceSection {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.reunionesAttendanceText {
+  color: #166534;
+  font-size: 0.86rem;
+  margin: 0;
+}
+
+.reunionesConfirmBtn {
+  background: #16a34a;
+  border: 1px solid #15803d;
+  border-radius: 9px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-height: 40px;
+  padding: 0 18px;
+  transition: background 0.15s;
+  width: 100%;
+}
+
+.reunionesConfirmBtn:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.reunionesConfirmBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.reunionesAttendanceSuccess {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  color: #166534;
+  font-weight: 600;
+  padding: 10px 12px;
+}
+
+.reunionesAttendanceError {
+  color: #b91c1c;
+  font-size: 0.84rem;
+  margin: 0;
+}
+
+/* ── Chat section ── */
+.reunionesChatList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.reunionesChatItem {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+}
+
+.reunionesChatItem--own {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.reunionesChatMeta {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.reunionesChatMeta strong {
+  color: #0f172a;
+  font-size: 0.82rem;
+}
+
+.reunionesChatMeta span {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.reunionesChatItem p {
+  color: #334155;
+  font-size: 0.84rem;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.reunionesChatForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reunionesChatForm textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 10px;
+  resize: vertical;
+}
+
+.reunionesChatForm textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.reunionesChatActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Detail panel footer ── */
+.reunionesDetailFooter {
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 20px;
+}
+
+/* ── Point panel form ── */
+.reunionesPointForm {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.reunionesField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reunionesField label {
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.reunionesField input,
+.reunionesField textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 10px;
+}
+
+.reunionesField input:focus,
+.reunionesField textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.reunionesPointsCounter {
+  color: #1d4ed8;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.reunionesFormActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .reunionesSidebar {
+    display: none;
+  }
+
+  .reunionesList {
+    grid-template-columns: 1fr;
+  }
+
+  .reunionesInfoGrid {
+    grid-template-columns: 1fr;
+  }
+}

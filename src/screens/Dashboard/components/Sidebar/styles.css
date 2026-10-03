@@ -1,0 +1,253 @@
+.sidebar {
+  --sidebar-accent-a: #f97316;
+  --sidebar-accent-b: #ef4444;
+  --sidebar-bg-a: #102a71;
+  --sidebar-bg-b: #0f172a;
+
+  backdrop-filter: blur(8px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 78px;
+  transition: width 0.25s ease;
+  width: 230px;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(249, 115, 22, 0.3), transparent 35%),
+    linear-gradient(180deg, var(--sidebar-bg-a) 0%, var(--sidebar-bg-b) 100%);
+  color: #ffffff;
+  font-family:
+    "Poppins",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.sidebar.isCollapsed {
+  width: 78px;
+}
+
+.sidebar-header {
+  padding: 20px 16px 12px;
+  text-align: left;
+}
+
+.sidebarBrandRow {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.sidebarBrandTitle {
+  align-items: center;
+  display: flex;
+  margin: 0;
+  min-height: 34px;
+}
+
+.brandText {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s ease;
+}
+
+.sidebarCollapseBtn {
+  -webkit-appearance: none;
+  appearance: none;
+  align-items: center;
+  background: rgba(2, 6, 23, 0.35);
+  border: 1px solid rgba(249, 115, 22, 0.22);
+  border-radius: 10px;
+  box-shadow: 0 8px 14px rgba(2, 6, 23, 0.2);
+  color: #e2e8f0;
+  cursor: pointer;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 34px;
+}
+
+.sidebarCollapseBtn:hover {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.22) 0%, rgba(239, 68, 68, 0.2) 100%);
+  border-color: rgba(251, 146, 60, 0.5);
+  box-shadow:
+    0 8px 16px rgba(15, 23, 42, 0.28),
+    0 0 0 1px rgba(251, 146, 60, 0.24);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.sidebarCollapseBtn:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(2, 6, 23, 0.45),
+    0 0 0 4px rgba(249, 115, 22, 0.35);
+}
+
+.sidebarCollapseBtn svg {
+  height: 15px;
+  width: 15px;
+}
+
+.sidebar-role {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: opacity 0.2s ease;
+}
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0.5rem 0.6rem;
+  flex: 1;
+  margin: 0;
+}
+
+.nav-menu li a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: none;
+  border-radius: 12px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.nav-menu li a svg {
+  flex: 0 0 auto;
+  height: 17px;
+  width: 17px;
+}
+
+.navText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.nav-menu li a:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  transform: translateX(2px);
+}
+
+.nav-menu li a.active {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.32) 0%, rgba(239, 68, 68, 0.28) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.16);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.sidebar-footer {
+  padding: 0.85rem 0.6rem 1rem;
+  background: rgba(0, 0, 0, 0.16);
+  min-height: 46px;
+}
+
+.btn-logout {
+  align-items: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #fff7ed;
+  cursor: pointer;
+  display: flex;
+  font-size: 0.86rem;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: flex-start;
+  padding: 0.6rem 0.72rem;
+  transition: all 0.2s ease;
+  width: 100%;
+
+  > svg {
+    height: 16px;
+    width: 16px;
+  }
+}
+
+.btn-logout:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.sidebar.isCollapsed .sidebar-header {
+  align-items: center;
+  padding: 18px 8px 10px;
+  text-align: center;
+}
+
+.sidebar.isCollapsed .brandText,
+.sidebar.isCollapsed .navText,
+.sidebar.isCollapsed .sidebar-role {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+}
+
+.sidebar.isCollapsed .sidebarBrandRow {
+  justify-content: center;
+}
+
+.sidebar.isCollapsed .sidebarCollapseBtn {
+  margin: 0 auto;
+}
+
+.sidebar.isCollapsed .nav-menu {
+  align-items: center;
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+}
+
+.sidebar.isCollapsed .nav-menu li {
+  width: 100%;
+}
+
+.sidebar.isCollapsed .nav-menu li a {
+  gap: 0;
+  justify-content: center;
+}
+
+.sidebar.isCollapsed .btn-logout {
+  justify-content: center;
+}
+
+@media (max-width: 960px) {
+  .sidebar {
+    width: 86px;
+  }
+
+  .brandText,
+  .navText,
+  .sidebar-role {
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+  }
+
+  .sidebarBrandRow {
+    justify-content: center;
+  }
+
+  .sidebarCollapseBtn {
+    display: none;
+  }
+
+  .nav-menu li a,
+  .btn-logout {
+    justify-content: center;
+  }
+}

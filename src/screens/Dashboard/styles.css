@@ -1,0 +1,109 @@
+.dashboardContent {
+  display: flex;
+  height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef6ff 100%);
+  width: 100%;
+  min-height: 0;
+}
+
+.dashboardMain {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: transparent;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  overflow-x: hidden;
+  transition: padding-left 0.25s ease;
+}
+
+.dashboardMain.sidebarCollapsed {
+  transition: padding-left 0.25s ease;
+}
+
+.dashboardTopbar {
+  align-items: center;
+  background: rgba(248, 250, 252, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(203, 213, 225, 0.9);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 22px;
+}
+
+.dashboardTopbarEyebrow {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.dashboardTopbarTitle {
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.dashboardNotifyBtn {
+  position: relative;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  border-radius: 14px;
+  color: #0f172a;
+  cursor: pointer;
+  display: inline-flex;
+  height: 44px;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 44px;
+}
+
+.dashboardNotifyBtn:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.12);
+}
+
+.dashboardNotifyBtn.active {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.dashboardNotifyBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #f97316;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dashboardMainContent {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 640px) {
+  .dashboardTopbar {
+    padding: 14px 16px;
+  }
+
+  .dashboardTopbarTitle {
+    font-size: 1rem;
+  }
+}
