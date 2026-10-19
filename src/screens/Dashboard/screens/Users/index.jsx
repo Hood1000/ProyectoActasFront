@@ -1,7 +1,18 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { IconPlus, IconX, IconPencil } from "@tabler/icons-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  IconAlertTriangle,
+  IconPencil,
+  IconPlus,
+  IconSearchOff,
+  IconUsers,
+  IconX,
+} from "@tabler/icons-react";
 import { useAuth } from "../../../../context/AuthContext";
 import usersService from "../../../../api/services/usersService";
+import EmptyState from "../../../../components/EmptyState";
+import { EMPTY_FILTERS } from "./constants";
+import { filterUsers } from "./utils";
+import UsersFilters from "./components/UsersFilters";
 import "./styles.css";
 import CreateUser from "./CreateUser";
 
@@ -19,8 +30,18 @@ const Users = () => {
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [confirmToggleUser, setConfirmToggleUser] = useState(null);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const { user } = useAuth();
   const canManageUsers = user?.role === "ADMIN";
+
+  const visibleUsers = useMemo(
+    () => filterUsers(users, filters),
+    [users, filters],
+  );
+
+  const handleFilterChange = useCallback((key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
   const mapUserRow = (apiUser) => {
     return {
@@ -166,8 +187,9 @@ const Users = () => {
         )}
 
         <div className="usersContent">
+          <UsersFilters filters={filters} onChange={handleFilterChange} />
+
           {isLoading && <div className="usersInfo">Cargando usuarios...</div>}
-          {!isLoading && error && <div className="usersInfo">{error}</div>}
           {!isLoading && actionError && (
             <div className="usersInfo">{actionError}</div>
           )}
@@ -213,8 +235,48 @@ const Users = () => {
             </>
           )}
 
+          {!isLoading && error && (
+            <EmptyState
+              action={{ label: "Reintentar", onClick: loadUsers }}
+              description={error}
+              fill
+              icon={<IconAlertTriangle size={28} />}
+              title="No se pudo cargar la lista"
+              tone="error"
+            />
+          )}
+
+          {!isLoading && !error && users.length === 0 && (
+            <EmptyState
+              description="Aún no hay usuarios registrados en el sistema."
+              fill
+              icon={<IconUsers size={28} />}
+              title="Sin usuarios"
+            />
+          )}
+
+          {!isLoading && !error && users.length > 0 && visibleUsers.length === 0 && (
+            <EmptyState
+              description="Ningún usuario coincide con los filtros aplicados. Ajusta o limpia los filtros para ver más resultados."
+              fill
+              icon={<IconSearchOff size={28} />}
+              title="Sin coincidencias"
+            />
+          )}
+
+          {!isLoading && !error && visibleUsers.length > 0 && (
           <div className="usersTableWrap">
             <table className="usersTable">
+              <colgroup>
+                <col className="usersCol--name" />
+                <col className="usersCol--email" />
+                <col className="usersCol--ci" />
+                <col className="usersCol--role" />
+                <col className="usersCol--dedication" />
+                <col className="usersCol--condition" />
+                <col className="usersCol--status" />
+                {canManageUsers && <col className="usersCol--actions" />}
+              </colgroup>
               <thead>
                 <tr>
                   <th>Nombre completo</th>
@@ -228,15 +290,7 @@ const Users = () => {
                 </tr>
               </thead>
               <tbody>
-                {!isLoading && users.length === 0 && (
-                  <tr>
-                    <td colSpan={canManageUsers ? 8 : 7}>
-                      No hay usuarios para mostrar.
-                    </td>
-                  </tr>
-                )}
-
-                {users.map((u) => (
+                {visibleUsers.map((u) => (
                   <tr key={u.id}>
                     <td>{u.nombreCompleto}</td>
                     <td>{u.email || "-"}</td>
@@ -270,6 +324,7 @@ const Users = () => {
               </tbody>
             </table>
           </div>
+          )}
         </div>
       </div>
     </div>

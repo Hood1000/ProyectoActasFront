@@ -1,0 +1,128 @@
+.usersFilters {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #eceff3;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.usersFiltersSearch {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  display: flex;
+  flex: 1 1 auto;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 12px;
+  max-width: fit-content;
+  min-width: 280px;
+}
+
+.usersFiltersSearch:focus-within {
+  border-color: #bfdbfe;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.usersFiltersSearchIcon {
+  color: #64748b;
+  flex: 0 0 auto;
+}
+
+.usersFiltersSearchInput {
+  background: transparent;
+  border: none;
+  color: #0f172a;
+  flex: 1 1 auto;
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+}
+
+.usersFiltersSearchInput::placeholder {
+  color: #475569;
+}
+
+.usersFiltersSearchClear {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  padding: 2px;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.usersFiltersSearchClear:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.usersFiltersSelects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.usersFiltersField {
+  flex: 0 0 180px;
+  width: 180px;
+}
+
+.usersFilterSummary {
+  color: #0f172a;
+  font-size: 14px;
+  left: 10px;
+  overflow: hidden;
+  position: absolute;
+  right: 8px;
+  text-overflow: ellipsis;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.usersFilterPlaceholder {
+  color: #475569;
+  font-size: 14px;
+  left: 10px;
+  overflow: hidden;
+  position: absolute;
+  right: 8px;
+  text-overflow: ellipsis;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.usersFilterCheck {
+  accent-color: #1d4ed8;
+  flex: 0 0 auto;
+  height: 15px;
+  margin: 0;
+  width: 15px;
+}
+
+.usersFilterOptionLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .usersFiltersField {
+    flex: 1 1 140px;
+    width: auto;
+  }
+}

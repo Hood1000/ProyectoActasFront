@@ -1,0 +1,91 @@
+.emptyState {
+	align-items: center;
+	background: #ffffff;
+	border: 1px dashed #dbe3ef;
+	border-radius: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	justify-content: center;
+	padding: 40px 24px;
+	text-align: center;
+}
+
+.emptyState--fill {
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.emptyStateIcon {
+	align-items: center;
+	background: #f1f5f9;
+	border-radius: 999px;
+	color: #64748b;
+	display: flex;
+	height: 56px;
+	justify-content: center;
+	width: 56px;
+}
+
+.emptyStateTitle {
+	color: #0f172a;
+	font-size: 16px;
+	font-weight: 600;
+	margin: 0;
+}
+
+.emptyStateDescription {
+	color: #667085;
+	font-size: 14px;
+	margin: 0;
+	max-width: 420px;
+}
+
+.emptyStateAction {
+	align-items: center;
+	background: #1d4ed8;
+	border: 1px solid #1d4ed8;
+	border-radius: 8px;
+	color: #ffffff;
+	cursor: pointer;
+	display: inline-flex;
+	font-size: 14px;
+	font-weight: 600;
+	gap: 6px;
+	margin-top: 8px;
+	padding: 8px 16px;
+	transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.emptyStateAction:hover {
+	background: #1e40af;
+	border-color: #1e40af;
+}
+
+.emptyState--error {
+	background: #fef2f2;
+	border-color: #fecaca;
+}
+
+.emptyState--error .emptyStateIcon {
+	background: #fee2e2;
+	color: #b91c1c;
+}
+
+.emptyState--error .emptyStateTitle {
+	color: #991b1b;
+}
+
+.emptyState--error .emptyStateDescription {
+	color: #b45454;
+}
+
+.emptyState--error .emptyStateAction {
+	background: #b91c1c;
+	border-color: #b91c1c;
+}
+
+.emptyState--error .emptyStateAction:hover {
+	background: #991b1b;
+	border-color: #991b1b;
+}

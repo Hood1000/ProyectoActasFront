@@ -1,26 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { IconX } from "@tabler/icons-react";
 import usersService from "../../../../../api/services/usersService";
+import { conditionOptions, dedicationOptions, roleOptions } from "../constants";
 import "./styles.css";
-
-const conditionOptions = [
-  { label: "Ordinario", value: "ORDINARIO" },
-  { label: "Contratado", value: "CONTRATADO" },
-  { label: "Interino", value: "INTERINO" },
-];
-
-const dedicationOptions = [
-  { label: "Exclusiva", value: "EXCLUSIVA" },
-  { label: "Tiempo completo", value: "TIEMPO_COMPLETO" },
-  { label: "Medio tiempo", value: "MEDIO_TIEMPO" },
-  { label: "Tiempo convencional", value: "TIEMPO_CONVENCIONAL" },
-];
-
-const roleOptions = [
-  { label: "Coordinadora", value: "ADMIN" },
-  { label: "Secretario", value: "SECRETARIO" },
-  { label: "Docente", value: "DOCENTE" },
-];
 
 const CreateUser = ({ initialUser, mode = "create", onCancel, onSaved }) => {
   const isEditMode = mode === "edit";
