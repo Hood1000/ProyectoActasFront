@@ -1,0 +1,116 @@
+.pagination {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #eceff3;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 14px 18px;
+  width: 100%;
+}
+
+.paginationSummary {
+  align-items: center;
+  color: #64748b;
+  display: flex;
+  font-size: 14px;
+  gap: 14px;
+}
+
+.paginationSizeSelect {
+  appearance: none;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #0f172a;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  height: 40px;
+  min-width: 96px;
+  padding: 0 34px 0 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.paginationSizeSelect:focus {
+  border-color: #bfdbfe;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  outline: none;
+}
+
+.paginationControls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.paginationArrow,
+.paginationPage {
+  align-items: center;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 14px;
+  height: 36px;
+  justify-content: center;
+  min-width: 36px;
+  padding: 0 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.paginationArrow {
+  background: #e2e8f0;
+  color: #0f172a;
+  height: 46px;
+  min-width: 46px;
+}
+
+.paginationArrow:first-child {
+  margin-right: 10px;
+}
+
+.paginationArrow:last-child {
+  margin-left: 10px;
+}
+
+.paginationArrow:hover:not(:disabled) {
+  background: #cbd5e1;
+}
+
+.paginationArrow:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.paginationPage {
+  background: transparent;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.paginationPage:hover:not(.active) {
+  background: #f1f5f9;
+}
+
+.paginationPage.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.paginationEllipsis {
+  color: #64748b;
+  padding: 0 4px;
+}

@@ -7,36 +7,36 @@
 
 /* ── Secondary sidebar ── */
 .reunionesSidebar {
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+  background: linear-gradient(195deg, #1e3a8a 0%, #0f172a 100%);
+  color: #ffffff;
   display: flex;
+  flex: 0 0 220px;
   flex-direction: column;
-  flex-shrink: 0;
+  gap: 2px;
   min-height: 100%;
-  padding: 16px 0;
-  width: 200px;
 }
 
 .reunionesSidebarHeader {
-  padding: 0 16px 12px;
+  align-items: center;
+  display: flex;
+  padding: 24px;
 }
 
 .reunionesSidebarHeader h3 {
-  color: #0f172a;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
   margin: 0;
-  text-transform: uppercase;
 }
 
 .reunionesStatusList {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   list-style: none;
   margin: 0;
-  padding: 0 8px;
+  padding: 0.5rem;
 }
 
 .reunionesStatusItem {
@@ -45,47 +45,45 @@
 
 .reunionesStatusBtn {
   align-items: center;
-  background: transparent;
+  background-color: transparent;
   border: none;
-  border-radius: 8px;
-  color: #475569;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   display: flex;
-  font-size: 0.88rem;
-  font-weight: 500;
-  gap: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  gap: 4px;
   justify-content: space-between;
-  min-height: 38px;
-  padding: 0 10px;
-  transition: background 0.15s, color 0.15s;
+  padding: 8px;
+  text-align: left;
+  transition: all 0.25s ease;
   width: 100%;
 }
 
 .reunionesStatusBtn:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  transform: translateX(4px);
 }
 
 .reunionesStatusBtn.active {
-  background: #eff6ff;
-  color: #1d4ed8;
-  font-weight: 700;
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  font-weight: 500;
 }
 
 .reunionesBadge {
-  background: #e2e8f0;
-  border-radius: 999px;
-  color: #475569;
-  font-size: 0.74rem;
-  font-weight: 700;
-  min-width: 20px;
-  padding: 2px 6px;
-  text-align: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  padding: 2px 8px;
 }
 
 .reunionesStatusBtn.active .reunionesBadge {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background-color: #3b82f6;
+  color: #ffffff;
 }
 
 /* ── Main content ── */

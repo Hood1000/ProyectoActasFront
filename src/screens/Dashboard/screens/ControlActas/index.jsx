@@ -1,7 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { IconUpload, IconX } from "@tabler/icons-react";
+import { IconSearchOff, IconUpload, IconX } from "@tabler/icons-react";
 import { useAuth } from "../../../../context/AuthContext";
 import meetingsService from "../../../../api/services/meetingsService";
+import EmptyState from "../../../../components/EmptyState";
+import MeetingsFilters from "../../../../components/MeetingsFilters";
+import { EMPTY_MEETING_FILTERS } from "../../../../components/MeetingsFilters/constants";
+import { filterMeetings, hasActiveFilters } from "../../../../components/MeetingsFilters/utils";
+import Pagination from "../../../../components/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../../../../components/Pagination/constants";
+import { clampPage, paginate } from "../../../../components/Pagination/utils";
 import "./styles.css";
 
 const meetingTypes = ["Consejo de carrera", "SIP pedagógico", "Asambleas"];
@@ -47,14 +54,6 @@ const STATUS_LABELS = {
   FINALIZADA: "Finalizada",
   CANCELADA: "Cancelada",
 };
-
-const STATUS_FILTERS = [
-  { label: "Todas", value: "ALL" },
-  { label: "Programadas", value: "PROGRAMADA" },
-  { label: "En curso", value: "EN_CURSO" },
-  { label: "Finalizadas", value: "FINALIZADA" },
-  { label: "Canceladas", value: "CANCELADA" },
-];
 
 const WORK_HOURS = { start: 7, end: 18 };
 
@@ -147,7 +146,9 @@ const ControlActas = () => {
   const [meetings, setMeetings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedType, setSelectedType] = useState(meetingTypes[0]);
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [listFilters, setListFilters] = useState(EMPTY_MEETING_FILTERS);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [detailMeetingId, setDetailMeetingId] = useState(null);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -209,18 +210,48 @@ const ControlActas = () => {
     hydrateData();
   }, []);
 
+  const searchedMeetings = useMemo(
+    () => filterMeetings(meetings, listFilters),
+    [meetings, listFilters],
+  );
+
   const filteredMeetings = useMemo(
     () =>
-      meetings.filter(
-        (meeting) =>
-          resolveMeetingType(meeting) === selectedType &&
-          (statusFilter === "ALL" || meeting.status === statusFilter),
+      searchedMeetings.filter(
+        (meeting) => resolveMeetingType(meeting) === selectedType,
       ),
-    [meetings, selectedType, statusFilter],
+    [searchedMeetings, selectedType],
+  );
+
+  const visiblePage = clampPage(currentPage, filteredMeetings.length, pageSize);
+
+  const pagedMeetings = useMemo(
+    () => paginate(filteredMeetings, visiblePage, pageSize),
+    [filteredMeetings, pageSize, visiblePage],
   );
 
   const getCountByType = (type) =>
-    meetings.filter((meeting) => resolveMeetingType(meeting) === type).length;
+    searchedMeetings.filter((meeting) => resolveMeetingType(meeting) === type).length;
+
+  const selectType = (type) => {
+    setSelectedType(type);
+    setCurrentPage(1);
+  };
+
+  const handleListFilterChange = (key, value) => {
+    setListFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const changePageSize = (size) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
+
+  const clearListFilters = () => {
+    setListFilters(EMPTY_MEETING_FILTERS);
+    setCurrentPage(1);
+  };
 
   const resetFinalizeState = () => {
     setActaFile(null);
@@ -457,7 +488,7 @@ const ControlActas = () => {
             <li key={type} className="actaTypeItem">
               <button
                 className={`actaTypeButton ${selectedType === type ? "active" : ""}`}
-                onClick={() => setSelectedType(type)}
+                onClick={() => selectType(type)}
                 type="button"
               >
                 <span>{type}</span>
@@ -478,18 +509,11 @@ const ControlActas = () => {
           )}
         </header>
 
-        <div className="controlActasStatusFilter">
-          {STATUS_FILTERS.map((filter) => (
-            <button
-              key={filter.value}
-              className={`controlActasFilterChip ${statusFilter === filter.value ? "active" : ""}`}
-              onClick={() => setStatusFilter(filter.value)}
-              type="button"
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
+        <MeetingsFilters
+          filters={listFilters}
+          onChange={handleListFilterChange}
+          onClear={clearListFilters}
+        />
 
         {isFormOpen && (
           <>
@@ -955,13 +979,20 @@ const ControlActas = () => {
           <p className="controlActasError">{errorMsg}</p>
         )}
 
-        {!isLoading && filteredMeetings.length === 0 ? (
+        {!isLoading && filteredMeetings.length === 0 && hasActiveFilters(listFilters) ? (
+          <EmptyState
+            action={{ label: "Limpiar filtros", onClick: clearListFilters }}
+            description="Ninguna reunión coincide con la búsqueda o el rango de fechas. Ajusta o limpia los filtros para ver más resultados."
+            icon={<IconSearchOff size={28} />}
+            title="Sin coincidencias"
+          />
+        ) : !isLoading && filteredMeetings.length === 0 ? (
           <div className="emptyState">
             <p>No se encontraron reuniones registradas.</p>
           </div>
         ) : (
           <ul className="actasList">
-            {filteredMeetings.map((meeting) => (
+            {pagedMeetings.map((meeting) => (
               <li key={meeting.id} className="actaCard">
                 <div className="actaCardStatusRow">
                   <span
@@ -1023,6 +1054,17 @@ const ControlActas = () => {
               </li>
             ))}
           </ul>
+        )}
+
+        {!isLoading && (
+          <Pagination
+            currentPage={visiblePage}
+            itemLabel="reuniones"
+            onPageChange={setCurrentPage}
+            onPageSizeChange={changePageSize}
+            pageSize={pageSize}
+            totalItems={filteredMeetings.length}
+          />
         )}
       </main>
     </div>

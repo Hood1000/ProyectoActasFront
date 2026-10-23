@@ -1,7 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { IconX } from "@tabler/icons-react";
+import { IconSearchOff, IconX } from "@tabler/icons-react";
 import { useSearchParams } from "react-router-dom";
 import meetingsService from "../../../../api/services/meetingsService";
+import EmptyState from "../../../../components/EmptyState";
+import MeetingsFilters from "../../../../components/MeetingsFilters";
+import { EMPTY_MEETING_FILTERS } from "../../../../components/MeetingsFilters/constants";
+import { filterMeetings, hasActiveFilters } from "../../../../components/MeetingsFilters/utils";
+import Pagination from "../../../../components/Pagination";
+import { DEFAULT_PAGE_SIZE } from "../../../../components/Pagination/constants";
+import { clampPage, paginate } from "../../../../components/Pagination/utils";
 import { useAuth } from "../../../../context/AuthContext";
 import { useNotifications } from "../../../../context/NotificationsContext";
 import "./styles.css";
@@ -72,6 +79,9 @@ const Actas = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [meetings, setMeetings] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("PROGRAMADA");
+  const [listFilters, setListFilters] = useState(EMPTY_MEETING_FILTERS);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [detailMeetingId, setDetailMeetingId] = useState(null);
   const [isPointPanelOpen, setIsPointPanelOpen] = useState(false);
   const [pointPanelMeetingId, setPointPanelMeetingId] = useState(null);
@@ -102,13 +112,45 @@ const Actas = () => {
     [meetings, pointPanelMeetingId],
   );
 
+  const searchedMeetings = useMemo(
+    () => filterMeetings(meetings, listFilters),
+    [meetings, listFilters],
+  );
+
   const filteredMeetings = useMemo(
-    () => meetings.filter((m) => m.status === selectedStatus),
-    [meetings, selectedStatus],
+    () => searchedMeetings.filter((m) => m.status === selectedStatus),
+    [searchedMeetings, selectedStatus],
+  );
+
+  const visiblePage = clampPage(currentPage, filteredMeetings.length, pageSize);
+
+  const pagedMeetings = useMemo(
+    () => paginate(filteredMeetings, visiblePage, pageSize),
+    [filteredMeetings, pageSize, visiblePage],
   );
 
   const getCountByStatus = (status) =>
-    meetings.filter((m) => m.status === status).length;
+    searchedMeetings.filter((m) => m.status === status).length;
+
+  const selectStatus = (status) => {
+    setSelectedStatus(status);
+    setCurrentPage(1);
+  };
+
+  const handleListFilterChange = (key, value) => {
+    setListFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const changePageSize = (size) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
+
+  const clearListFilters = () => {
+    setListFilters(EMPTY_MEETING_FILTERS);
+    setCurrentPage(1);
+  };
 
   const myPointsInMeeting = (meeting) => {
     if (!meeting?.agendaPoints) return [];
@@ -342,7 +384,7 @@ const Actas = () => {
             <li key={tab.value} className="reunionesStatusItem">
               <button
                 className={`reunionesStatusBtn ${selectedStatus === tab.value ? "active" : ""}`}
-                onClick={() => setSelectedStatus(tab.value)}
+                onClick={() => selectStatus(tab.value)}
                 type="button"
               >
                 <span>{tab.label}</span>
@@ -364,13 +406,28 @@ const Actas = () => {
           </div>
         </header>
 
+        <MeetingsFilters
+          filters={listFilters}
+          onChange={handleListFilterChange}
+          onClear={clearListFilters}
+        />
+
         {pageMessage && <div className="reunionesMessage">{pageMessage}</div>}
 
         {isLoading && (
           <div className="reunionesMessage">Cargando reuniones...</div>
         )}
 
-        {!isLoading && filteredMeetings.length === 0 && (
+        {!isLoading && filteredMeetings.length === 0 && hasActiveFilters(listFilters) && (
+          <EmptyState
+            action={{ label: "Limpiar filtros", onClick: clearListFilters }}
+            description="Ninguna reunión coincide con la búsqueda o el rango de fechas. Ajusta o limpia los filtros para ver más resultados."
+            icon={<IconSearchOff size={28} />}
+            title="Sin coincidencias"
+          />
+        )}
+
+        {!isLoading && filteredMeetings.length === 0 && !hasActiveFilters(listFilters) && (
           <div className="reunionesEmpty">
             No hay reuniones en estado "{STATUS_LABELS[selectedStatus]}".
           </div>
@@ -378,7 +435,7 @@ const Actas = () => {
 
         {!isLoading && filteredMeetings.length > 0 && (
           <ul className="reunionesList">
-            {filteredMeetings.map((meeting) => {
+            {pagedMeetings.map((meeting) => {
               const myPoints = myPointsInMeeting(meeting);
               const canAddPoint =
                 canSubmitByRole &&
@@ -432,6 +489,17 @@ const Actas = () => {
               );
             })}
           </ul>
+        )}
+
+        {!isLoading && (
+          <Pagination
+            currentPage={visiblePage}
+            itemLabel="reuniones"
+            onPageChange={setCurrentPage}
+            onPageSizeChange={changePageSize}
+            pageSize={pageSize}
+            totalItems={filteredMeetings.length}
+          />
         )}
       </main>
 
