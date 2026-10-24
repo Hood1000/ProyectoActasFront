@@ -1,6 +1,7 @@
 .controlActasContainer {
   display: flex;
-  min-height: 100%;
+  height: 100%;
+  min-height: 0;
   background-color: #ffffff;
   min-width: 0;
   width: 100%;
@@ -87,7 +88,9 @@
 }
 
 .mainContent {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-width: 0;
   padding: 2.5rem;
   overflow-y: auto;
@@ -95,8 +98,7 @@
 }
 
 .mainHeader {
-  margin-bottom: 2.5rem;
-  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 0.5rem;
   padding-bottom: 1rem;
 }
 
@@ -638,37 +640,6 @@
   border: none;
   border-top: 1px solid #e2e8f0;
   margin: 4px 0;
-}
-
-.controlActasStatusFilter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 1.75rem;
-}
-
-.controlActasFilterChip {
-  background: #f8fafc;
-  border: 1px solid #dbe3ef;
-  border-radius: 999px;
-  color: #475569;
-  cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.controlActasFilterChip:hover {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #1d4ed8;
-}
-
-.controlActasFilterChip.active {
-  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
-  border-color: #1d4ed8;
-  color: #ffffff;
 }
 
 .controlActasFieldHint {

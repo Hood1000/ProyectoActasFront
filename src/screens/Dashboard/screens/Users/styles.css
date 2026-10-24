@@ -194,7 +194,7 @@
 	flex: 1 1 auto;
 	min-height: 0;
 	overflow-y: auto;
-	overflow-x: auto;
+	overflow-x: hidden;
 }
 
 .usersContent {
@@ -208,8 +208,17 @@
 .usersTable {
 	width: 100%;
 	border-collapse: collapse;
-	min-width: 1280px;
+	table-layout: fixed;
 }
+
+.usersCol--name { width: 15%; }
+.usersCol--email { width: 19%; }
+.usersCol--ci { width: 10%; }
+.usersCol--role { width: 11%; }
+.usersCol--dedication { width: 13%; }
+.usersCol--condition { width: 11%; }
+.usersCol--status { width: 8%; }
+.usersCol--actions { width: 13%; }
 
 .usersTable thead th {
 	text-align: left;
@@ -238,26 +247,27 @@
 
 .usersActionsCell {
 	display: flex;
-	gap: 8px;
-	justify-content: flex-end;
-	align-items: center;
-	flex-wrap: nowrap;
+	flex-direction: column;
+	gap: 6px;
+	align-items: stretch;
 }
 
 .usersActionsCell .usersTableBtn {
-	flex-shrink: 0;
+	min-width: 0;
+	width: 100%;
 }
 
 .usersTable thead th, .usersTable tbody td {
 	text-align: left;
 	vertical-align: middle;
+	overflow-wrap: anywhere;
+	word-break: break-word;
 }
 
 .usersTable thead th:last-child,
 .usersTable tbody td:last-child {
 	text-align: center;
 	padding-right: 16px;
-	width: 240px;
 }
 
 @media (max-width: 720px) {
@@ -269,7 +279,5 @@
 		align-items: flex-start;
 		flex-direction: column;
 	}
-
-	.usersTable { min-width: 1080px; }
 }
 
