@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
 import { useNotifications } from "../../../../context/NotificationsContext";
-import { mockActas, mockAgenda } from "../../components/mock/mockData";
 import meetingsService from "../../../../api/services/meetingsService";
 import {
   IconChecklist,
@@ -19,12 +18,9 @@ import "./styles.css";
 
 const ControlPanel = () => {
   const navigate = useNavigate();
-  const totalMeetings = mockActas.length;
-
-  const pendingPoints = mockAgenda.filter((p) => p.type === "Pendiente").length;
-  const agreements = mockAgenda.filter((p) => p.type === "Acuerdo");
-
   const { user } = useAuth();
+  const [meetings, setMeetings] = React.useState([]);
+  const [isStatsLoading, setIsStatsLoading] = React.useState(true);
   const { addNotification } = useNotifications();
   const [annualArchives, setAnnualArchives] = React.useState([]);
   const [annualCloseYear, setAnnualCloseYear] = React.useState(String(new Date().getFullYear()));
@@ -47,16 +43,19 @@ const ControlPanel = () => {
       actions: [
         {
           description: "Crea y publica reuniones.",
+          href: "/dashboard/controlreuniones",
           icon: IconFileText,
           title: "Gestion de Reuniones",
         },
         {
           description: "Controla roles y accesos.",
+          href: "/dashboard/users",
           icon: IconUsers,
           title: "Gestión de Usuarios",
         },
         {
           description: "Da seguimiento a decisiones.",
+          href: "/dashboard/voting",
           icon: IconChecklist,
           title: "Control de Acuerdos",
         },
@@ -66,16 +65,19 @@ const ControlPanel = () => {
       actions: [
         {
           description: "Coordina reuniones rapidamente.",
+          href: "/dashboard/controlreuniones",
           icon: IconPencil,
           title: "Coordinacion de Reuniones",
         },
         {
           description: "Registra acuerdos clave.",
+          href: "/dashboard/voting",
           icon: IconChecklist,
           title: "Registro de Acuerdos",
         },
         {
           description: "Revisa pendientes del día.",
+          href: "/dashboard/attendance",
           icon: IconEye,
           title: "Seguimiento Diario",
         },
@@ -85,16 +87,19 @@ const ControlPanel = () => {
       actions: [
         {
           description: "Propón hasta 2 puntos.",
+          href: "/dashboard/agenda",
           icon: IconHandStop,
           title: "Propuesta de Puntos",
         },
         {
           description: "Consulta acuerdos aprobados.",
+          href: "/dashboard/voting",
           icon: IconEye,
           title: "Consulta de Acuerdos",
         },
         {
           description: "Consulta reuniones vigentes.",
+          href: "/dashboard/reuniones",
           icon: IconFileText,
           title: "Estado de Reuniones",
         },
@@ -104,6 +109,29 @@ const ControlPanel = () => {
 
   const quickAccessCards =
     quickAccessByRole[user?.role]?.actions || quickAccessByRole.DOCENTE.actions;
+
+  React.useEffect(() => {
+    meetingsService
+      .list()
+      .then((list) => setMeetings(Array.isArray(list) ? list : []))
+      .catch(() => setMeetings([]))
+      .finally(() => setIsStatsLoading(false));
+  }, []);
+
+  const stats = React.useMemo(() => {
+    const points = meetings.flatMap((meeting) => meeting.agendaPoints || []);
+    return {
+      activeMeetings: meetings.filter((meeting) => ["PROGRAMADA", "EN_CURSO"].includes(meeting.status)).length,
+      agreements: meetings
+        .filter((meeting) => meeting.status === "FINALIZADA")
+        .flatMap((meeting) => meeting.agendaPoints || [])
+        .filter((point) => point.status === "APROBADO" && !point.isBasePoint).length,
+      pendingPoints: points.filter((point) => point.status === "PENDIENTE").length,
+      totalMeetings: meetings.length,
+    };
+  }, [meetings]);
+
+  const formatStat = (value) => (isStatsLoading ? "—" : value);
 
   React.useEffect(() => {
     const loadArchives = async () => {
@@ -283,15 +311,19 @@ const ControlPanel = () => {
       <div className="cp-stats-grid">
         <div className="cp-stat-card">
           <span className="cp-stat-title">Total Reuniones</span>
-          <span className="cp-stat-number">{totalMeetings}</span>
+          <span className="cp-stat-number">{formatStat(stats.totalMeetings)}</span>
+        </div>
+        <div className="cp-stat-card">
+          <span className="cp-stat-title">Reuniones Activas</span>
+          <span className="cp-stat-number">{formatStat(stats.activeMeetings)}</span>
         </div>
         <div className="cp-stat-card">
           <span className="cp-stat-title">Puntos Pendientes</span>
-          <span className="cp-stat-number">{pendingPoints}</span>
+          <span className="cp-stat-number">{formatStat(stats.pendingPoints)}</span>
         </div>
         <div className="cp-stat-card">
           <span className="cp-stat-title">Acuerdos Cerrados</span>
-          <span className="cp-stat-number">{agreements.length}</span>
+          <span className="cp-stat-number">{formatStat(stats.agreements)}</span>
         </div>
       </div>
 
@@ -303,8 +335,13 @@ const ControlPanel = () => {
                 <h4 className="cp-subtitle">Lo que puedes hacer</h4>
               </div>
               <div className="cp-quickGrid">
-                {quickAccessCards.map(({ description, icon: CardIcon, title }) => (
-                  <article key={title} className="cp-quickCard">
+                {quickAccessCards.map(({ description, href, icon: CardIcon, title }) => (
+                  <button
+                    className="cp-quickCard"
+                    key={title}
+                    onClick={() => navigate(href)}
+                    type="button"
+                  >
                     <div className="cp-quickIcon">
                       <CardIcon size={20} />
                     </div>
@@ -312,7 +349,7 @@ const ControlPanel = () => {
                       <h5 className="cp-quickTitle">{title}</h5>
                       <p className="cp-quickDesc">{description}</p>
                     </div>
-                  </article>
+                  </button>
                 ))}
               </div>
             </div>

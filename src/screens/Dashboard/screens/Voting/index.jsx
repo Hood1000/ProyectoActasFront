@@ -1,54 +1,64 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IconGavel, IconRefresh } from "@tabler/icons-react";
 import { useAuth } from "../../../../context/AuthContext";
 import meetingsService from "../../../../api/services/meetingsService";
+import MeetingPolls from "../../../../components/MeetingPolls";
 import "./styles.css";
 
-const MINIMUM_ATTENDEES_TO_PROCEED = 2;
+const formatDate = (value) =>
+  value
+    ? new Date(value).toLocaleString("es-VE", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "America/Caracas",
+      })
+    : "Sin fecha";
 
 const Voting = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [meetings, setMeetings] = useState([]);
+  const [selectedId, setSelectedId] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const loadMeetings = async () => {
-      setIsLoading(true);
-      setError("");
-      try {
-        const response = await meetingsService.list();
-        setMeetings(Array.isArray(response) ? response : []);
-      } catch {
-        setMeetings([]);
-        setError("No fue posible cargar la información de reuniones.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadMeetings();
+  const loadMeetings = useCallback(async () => {
+    setError("");
+    try {
+      const response = await meetingsService.list();
+      setMeetings(Array.isArray(response) ? response : []);
+    } catch {
+      setMeetings([]);
+      setError("No fue posible cargar la información de reuniones.");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const activeMeeting = useMemo(
+  useEffect(() => {
+    loadMeetings();
+  }, [loadMeetings]);
+
+  const activeMeetings = useMemo(
     () =>
-      meetings.find(
-        (meeting) =>
-          !meeting.isClosed && !["CANCELADA", "FINALIZADA"].includes(meeting.status),
-      ) || null,
+      meetings
+        .filter((meeting) => meeting.status === "EN_CURSO" && !meeting.isClosed)
+        .sort((a, b) => new Date(a.date) - new Date(b.date)),
     [meetings],
   );
 
+  const activeMeeting =
+    activeMeetings.find((meeting) => meeting.id === selectedId) || activeMeetings[0] || null;
+
+  const canManageMeetings = ["ADMIN", "SECRETARIO"].includes(user?.role || "");
   const presentCount = activeMeeting?.presentCount || 0;
   const totalInvited = activeMeeting?.totalInvited || 0;
-  const votingEnabled = presentCount >= MINIMUM_ATTENDEES_TO_PROCEED;
-  const missingForMinimum = Math.max(0, MINIMUM_ATTENDEES_TO_PROCEED - presentCount);
-  const canManageMeetings = ["ADMIN", "SECRETARIO"].includes(user?.role || "");
 
   if (isLoading) {
     return (
       <section className="votingPage">
-        <div className="votingLoading">Validando asistencia de la reunion activa...</div>
+        <div className="votingLoading">Buscando reuniones en curso...</div>
       </section>
     );
   }
@@ -56,78 +66,108 @@ const Voting = () => {
   return (
     <section className="votingPage">
       <header className="votingHeader">
-        <h2>Votaciones</h2>
-        <p>Control de votaciones de la reunion activa.</p>
+        <div>
+          <h2>Votaciones</h2>
+          <p>Vota y sigue en vivo las decisiones de la reunión en curso.</p>
+        </div>
+        <button className="votingRefreshBtn" onClick={loadMeetings} title="Actualizar asistencia" type="button">
+          <IconRefresh size={18} />
+        </button>
       </header>
 
       {error && <div className="votingError">{error}</div>}
 
       {!error && !activeMeeting && (
         <div className="votingEmptyState">
-          <div className="votingEmptyIcon">—</div>
-          <h3>No hay una reunion activa</h3>
+          <div className="votingEmptyIcon">
+            <IconGavel size={26} />
+          </div>
+          <h3>No hay una reunión en curso</h3>
           {canManageMeetings ? (
             <>
               <p>
-                Debes crear y gestionar una reunion desde Control de Actas antes de poder
-                registrar votaciones.
+                Las votaciones se abren durante una reunión en curso. Programa o gestiona las
+                reuniones desde Control de Reuniones.
               </p>
               <button
                 className="votingPrimaryBtn"
                 onClick={() => navigate("/dashboard/controlreuniones")}
                 type="button"
               >
-                Ir a Control de Actas
+                Ir a Control de Reuniones
               </button>
             </>
           ) : (
             <p>
-              El administrador o secretario debe crear una reunion activa para que puedas
-              participar en las votaciones.
+              Cuando comience una reunión a la que estés convocado, sus votaciones aparecerán
+              aquí.
             </p>
           )}
         </div>
       )}
 
       {!error && activeMeeting && (
-        <div className="votingMeetingCard">
-          <div className="votingMeetingTitle">
-            <h3>{activeMeeting.title}</h3>
-            <span className="votingQuorumBadge votingQuorumBadge--active">En curso</span>
-          </div>
-
-          <div className="votingAttendanceRow">
-            <div className="votingAttendanceStat">
-              <span className="votingStatValue">{presentCount}</span>
-              <span className="votingStatLabel">Presentes</span>
-            </div>
-            <div className="votingAttendanceDivider" />
-            <div className="votingAttendanceStat">
-              <span className="votingStatValue">{totalInvited}</span>
-              <span className="votingStatLabel">Invitados</span>
-            </div>
-            <div className="votingAttendanceDivider" />
-            <div className="votingAttendanceStat">
-              <span className="votingStatValue">{MINIMUM_ATTENDEES_TO_PROCEED}</span>
-              <span className="votingStatLabel">Minimo</span>
-            </div>
-          </div>
-
-          {votingEnabled ? (
-            <div className="votingQuorumOk">
-              Quorum alcanzado. Las votaciones estan habilitadas.
-            </div>
-          ) : (
-            <div className="votingQuorumWarning">
-              Faltan {missingForMinimum} asistente(s) para alcanzar el minimo requerido de{" "}
-              {MINIMUM_ATTENDEES_TO_PROCEED}.
+        <>
+          {activeMeetings.length > 1 && (
+            <div className="votingSelector" role="tablist" aria-label="Reuniones en curso">
+              {activeMeetings.map((meeting) => (
+                <button
+                  aria-selected={meeting.id === activeMeeting.id}
+                  className={`votingSelectorBtn ${meeting.id === activeMeeting.id ? "isActive" : ""}`}
+                  key={meeting.id}
+                  onClick={() => setSelectedId(meeting.id)}
+                  role="tab"
+                  type="button"
+                >
+                  {meeting.title}
+                </button>
+              ))}
             </div>
           )}
 
-          <button className="votingPrimaryBtn" disabled={!votingEnabled} type="button">
-            {votingEnabled ? "Iniciar votacion" : "Votacion bloqueada — sin quorum"}
-          </button>
-        </div>
+          <div className="votingMeetingCard">
+            <div className="votingMeetingTitle">
+              <div>
+                <h3>{activeMeeting.title}</h3>
+                <p className="votingMeetingMeta">
+                  {formatDate(activeMeeting.date)} · {activeMeeting.location || "Sin lugar"}
+                </p>
+              </div>
+              <span className="votingQuorumBadge votingQuorumBadge--active">En curso</span>
+            </div>
+
+            <div className="votingAttendanceRow">
+              <div className="votingAttendanceStat">
+                <span className="votingStatValue">{presentCount}</span>
+                <span className="votingStatLabel">Presentes</span>
+              </div>
+              <div className="votingAttendanceDivider" />
+              <div className="votingAttendanceStat">
+                <span className="votingStatValue">{totalInvited}</span>
+                <span className="votingStatLabel">Convocados</span>
+              </div>
+              <div className="votingAttendanceDivider" />
+              <div className="votingAttendanceStat">
+                <span className={`votingStatValue ${activeMeeting.hasQuorum ? "isOk" : "isBad"}`}>
+                  {activeMeeting.hasQuorum ? "Sí" : "No"}
+                </span>
+                <span className="votingStatLabel">Quórum</span>
+              </div>
+            </div>
+
+            {activeMeeting.hasQuorum ? (
+              <div className="votingQuorumOk">Quórum alcanzado. Las votaciones están habilitadas.</div>
+            ) : (
+              <div className="votingQuorumWarning">
+                Sin quórum: se requiere {activeMeeting.quorumFormula?.toLowerCase() || "el mínimo de asistentes"}.
+              </div>
+            )}
+          </div>
+
+          <div className="votingPollsCard">
+            <MeetingPolls key={activeMeeting.id} meeting={activeMeeting} user={user} />
+          </div>
+        </>
       )}
     </section>
   );

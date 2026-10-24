@@ -108,8 +108,8 @@ const dismissNotification = async (recipientId) => {
   return resp.data || resp;
 };
 
-const listMeetingChatMessages = async (meetingId) => {
-  const resp = await axiosClient.get(`/meetings/${meetingId}/chat`);
+const listMeetingChatMessages = async (meetingId, params) => {
+  const resp = await axiosClient.get(`/meetings/${meetingId}/chat`, { params });
   return resp.data || [];
 };
 
@@ -118,21 +118,56 @@ const postMeetingChatMessage = async (meetingId, payload) => {
   return resp.data || resp;
 };
 
+const listMeetingPolls = async (meetingId) => {
+  const resp = await axiosClient.get(`/meetings/${meetingId}/polls`);
+  return resp.data || [];
+};
+
+const createMeetingPoll = async (meetingId, payload) => {
+  const resp = await axiosClient.post(`/meetings/${meetingId}/polls`, payload);
+  return resp.data || resp;
+};
+
+const voteMeetingPoll = async (meetingId, pollId, option) => {
+  const resp = await axiosClient.post(`/meetings/${meetingId}/polls/${pollId}/vote`, { option });
+  return resp.data || resp;
+};
+
+const closeMeetingPoll = async (meetingId, pollId) => {
+  const resp = await axiosClient.post(`/meetings/${meetingId}/polls/${pollId}/close`);
+  return resp.data || resp;
+};
+
+const markAttendance = async (meetingId, userId, payload) => {
+  const resp = await axiosClient.patch(`/meetings/${meetingId}/attendance/${userId}`, payload);
+  return resp.data || resp;
+};
+
+const finalizeAttendance = async (meetingId) => {
+  const resp = await axiosClient.post(`/meetings/${meetingId}/attendance/finalize`);
+  return resp.data || resp;
+};
+
 export default {
   cancel,
   closeAnnualYear,
   closeMeeting,
+  closeMeetingPoll,
   confirmAttendance,
   consolidateAgenda,
   create,
+  createMeetingPoll,
   dismissNotification,
+  finalizeAttendance,
   getAvailableAgenda,
   listAbsenceAlerts,
   listAnnualArchives,
   listMeetingChatMessages,
+  listMeetingPolls,
   list,
   listNotifications,
   markAllNotificationsAsRead,
+  markAttendance,
   markNotificationAsRead,
   postMeetingChatMessage,
   proposePoint,
@@ -140,4 +175,5 @@ export default {
   reviewPoint,
   update,
   uploadEvidenceFile,
+  voteMeetingPoll,
 };

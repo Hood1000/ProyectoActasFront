@@ -67,10 +67,31 @@ const ContenRoutes = () => {
             }
           />
           <Route path="profile" element={<Profile />} />
-          <Route path="agenda" element={<Agenda />} />
-          <Route path="attendance" element={<Attendance />} />
+          <Route
+            path="agenda"
+            element={
+              <RequireRole allowedRoles={["ADMIN", "DOCENTE", "SECRETARIO"]}>
+                <Agenda />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="attendance"
+            element={
+              <RequireRole allowedRoles={["ADMIN", "SECRETARIO"]}>
+                <Attendance />
+              </RequireRole>
+            }
+          />
           <Route path="voting" element={<Voting />} />
-          <Route path="sanctions" element={<Sanctions />} />
+          <Route
+            path="sanctions"
+            element={
+              <RequireRole allowedRoles={["ADMIN", "SECRETARIO"]}>
+                <Sanctions />
+              </RequireRole>
+            }
+          />
           <Route path="reuniones" element={<Actas />} />
           <Route path="actas" element={<Actas />} />
         </Route>

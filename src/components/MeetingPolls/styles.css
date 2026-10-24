@@ -1,0 +1,526 @@
+.mpoll {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mpollHeader {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.mpollHeader > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.mpollHeaderTitle {
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.mpollHeaderMeta {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.mpollNotice {
+  align-items: flex-start;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  color: #92400e;
+  display: flex;
+  font-size: 0.82rem;
+  gap: 8px;
+  line-height: 1.4;
+  margin: 0;
+  padding: 10px 12px;
+}
+
+.mpollNotice svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Buttons ── */
+.mpollBtn {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.mpollBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.mpollBtn--primary {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.mpollBtn--primary:hover:not(:disabled) {
+  background: #1e40af;
+}
+
+.mpollBtn--ghost {
+  background: #ffffff;
+  border-color: #d1d5db;
+  color: #334155;
+}
+
+.mpollBtn--ghost:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.mpollBtn--danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.mpollBtn--danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.mpollLinkBtn {
+  align-items: center;
+  background: none;
+  border: none;
+  color: #1d4ed8;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  gap: 2px;
+  padding: 0;
+}
+
+/* ── New poll form ── */
+.mpollForm {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+}
+
+.mpollForm label {
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.mpollForm textarea {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #0f172a;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 10px;
+  resize: vertical;
+}
+
+.mpollForm textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.mpollFormFooter {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.mpollCounter {
+  color: #94a3b8;
+  font-size: 0.74rem;
+}
+
+.mpollManageActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Poll card ── */
+.mpollList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mpollCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.mpollCard--open {
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 14px rgba(29, 78, 216, 0.08);
+}
+
+.mpollCardHeader {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.mpollState {
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 999px;
+  color: #475569;
+  display: inline-flex;
+  font-size: 0.7rem;
+  font-weight: 700;
+  gap: 5px;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  text-transform: uppercase;
+}
+
+.mpollState--open {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.mpollStateDot {
+  animation: mpollPulse 2s ease-in-out infinite;
+  background: #10b981;
+  border-radius: 50%;
+  height: 7px;
+  width: 7px;
+}
+
+@keyframes mpollPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  50% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+}
+
+.mpollVerdict {
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 10px;
+}
+
+.mpollVerdict--ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.mpollVerdict--bad {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.mpollVerdict--neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.mpollQuestion {
+  color: #0f172a;
+  font-size: 0.98rem;
+  line-height: 1.4;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.mpollMeta {
+  color: #64748b;
+  font-size: 0.76rem;
+  margin: -4px 0 0;
+}
+
+/* ── Vote buttons ── */
+.mpollVoteGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.mpollVoteBtn {
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 4px;
+  padding: 10px 6px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+
+.mpollVoteBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.mpollVoteBtn:disabled {
+  cursor: wait;
+}
+
+.mpollVoteBtn--a_favor:hover,
+.mpollVoteBtn--a_favor.isSelected {
+  background: #f0fdf4;
+  border-color: #22c55e;
+  color: #15803d;
+}
+
+.mpollVoteBtn--en_contra:hover,
+.mpollVoteBtn--en_contra.isSelected {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #b91c1c;
+}
+
+.mpollVoteBtn--abstencion:hover,
+.mpollVoteBtn--abstencion.isSelected {
+  background: #f8fafc;
+  border-color: #64748b;
+  color: #334155;
+}
+
+.mpollVoteBtn.isSelected {
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.mpollMyVote {
+  color: #475569;
+  font-size: 0.78rem;
+  margin: -2px 0 0;
+}
+
+/* ── Results ── */
+.mpollResults {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mpollResultLabel {
+  color: #334155;
+  display: flex;
+  font-size: 0.8rem;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.mpollResultCount {
+  font-weight: 700;
+}
+
+.mpollResultCount small {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.mpollBar {
+  background: #f1f5f9;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.mpollBarFill {
+  border-radius: 999px;
+  display: block;
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.mpollBarFill--a_favor { background: #22c55e; }
+.mpollBarFill--en_contra { background: #ef4444; }
+.mpollBarFill--abstencion { background: #94a3b8; }
+
+.mpollFooter {
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+}
+
+.mpollTotal {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.mpollVoters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.mpollVoters li {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.mpollVoterAvatar {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 0.64rem;
+  font-weight: 700;
+  height: 26px;
+  justify-content: center;
+  width: 26px;
+}
+
+.mpollVoterName {
+  color: #1e293b;
+  flex: 1;
+  font-size: 0.82rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mpollVoterOption {
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+
+.mpollVoterOption--a_favor { background: #dcfce7; color: #166534; }
+.mpollVoterOption--en_contra { background: #fee2e2; color: #991b1b; }
+.mpollVoterOption--abstencion { background: #f1f5f9; color: #475569; }
+
+.mpollManage {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.mpollManage > span {
+  color: #991b1b;
+  font-size: 0.8rem;
+}
+
+.mpollError {
+  color: #b91c1c;
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+/* ── Empty & loading ── */
+.mpollEmpty {
+  align-items: center;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 14px;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.mpollEmptyIcon {
+  align-items: center;
+  background: #ede9fe;
+  border-radius: 50%;
+  color: #6d28d9;
+  display: inline-flex;
+  height: 52px;
+  justify-content: center;
+  margin-bottom: 4px;
+  width: 52px;
+}
+
+.mpollEmpty strong {
+  color: #0f172a;
+  font-size: 0.92rem;
+}
+
+.mpollEmpty p {
+  font-size: 0.82rem;
+  margin: 0;
+  max-width: 320px;
+}
+
+.mpollSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mpollSkeleton span {
+  animation: mpollShimmer 1.2s ease-in-out infinite;
+  background: linear-gradient(90deg, #e2e8f0 0%, #f8fafc 50%, #e2e8f0 100%);
+  background-size: 200% 100%;
+  border-radius: 14px;
+  height: 140px;
+}
+
+@keyframes mpollShimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@media (max-width: 480px) {
+  .mpollVoteGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mpollVoteBtn {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mpollStateDot,
+  .mpollSkeleton span,
+  .mpollBarFill {
+    animation: none;
+    transition: none;
+  }
+}

@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem("user", JSON.stringify(validatedUser));
           setUser(validatedUser);
         }
-      } catch (err) {
+      } catch {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setToken(null);

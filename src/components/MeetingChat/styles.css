@@ -1,0 +1,464 @@
+.mchat {
+  background: #f1f5f9;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+
+/* ── Header ── */
+.mchatHeader {
+  align-items: center;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 12px 20px;
+}
+
+.mchatHeaderInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mchatHeaderTitle {
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.mchatHeaderMeta {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.mchatStatus {
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 999px;
+  color: #64748b;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  gap: 6px;
+  padding: 4px 10px;
+}
+
+.mchatStatusDot {
+  background: #94a3b8;
+  border-radius: 50%;
+  height: 8px;
+  width: 8px;
+}
+
+.mchatStatus--live {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.mchatStatus--live .mchatStatusDot {
+  animation: mchatPulse 2s ease-in-out infinite;
+  background: #10b981;
+}
+
+@keyframes mchatPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  50% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+}
+
+/* ── Scroll area ── */
+.mchatScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 16px 16px;
+  scrollbar-width: thin;
+}
+
+.mchatList {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mchatDay {
+  display: flex;
+  justify-content: center;
+  margin: 14px 0 6px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.mchatDay span {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 12px;
+  text-transform: capitalize;
+}
+
+/* ── Rows & bubbles ── */
+.mchatRow {
+  align-items: flex-start;
+  animation: mchatIn 0.18s ease-out;
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+  max-width: 100%;
+}
+
+.mchatRow--groupStart {
+  margin-top: 10px;
+}
+
+.mchatRow--own {
+  justify-content: flex-end;
+}
+
+@keyframes mchatIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.mchatAvatarSlot {
+  flex-shrink: 0;
+  width: 32px;
+}
+
+.mchatAvatar {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 700;
+  height: 32px;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  width: 32px;
+}
+
+.mchatBubbleWrap {
+  display: flex;
+  flex-direction: column;
+  max-width: min(78%, 440px);
+  min-width: 0;
+}
+
+.mchatRow--own .mchatBubbleWrap {
+  align-items: flex-end;
+}
+
+.mchatAuthor {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 3px 4px;
+}
+
+.mchatAuthor strong {
+  color: #0f172a;
+  font-size: 0.78rem;
+}
+
+.mchatRole {
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 1px 7px;
+}
+
+.mchatRole--admin {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.mchatRole--secretario {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.mchatRole--docente {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.mchatBubble {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px 16px 16px 6px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  color: #1e293b;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  justify-content: flex-end;
+  padding: 7px 10px 6px 12px;
+}
+
+.mchatBubble--first {
+  border-top-left-radius: 16px;
+}
+
+.mchatBubble--last {
+  border-bottom-left-radius: 16px;
+}
+
+.mchatRow--own .mchatBubble {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  border-radius: 16px 6px 6px 16px;
+  color: #ffffff;
+}
+
+.mchatRow--own .mchatBubble--first {
+  border-top-right-radius: 16px;
+}
+
+.mchatRow--own .mchatBubble--last {
+  border-bottom-right-radius: 16px;
+}
+
+.mchatBubble p {
+  flex: 1 1 auto;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.mchatBubble time {
+  align-self: flex-end;
+  color: #94a3b8;
+  font-size: 0.66rem;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.mchatRow--own .mchatBubble time {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ── Empty & loading ── */
+.mchatEmpty {
+  align-items: center;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.mchatEmptyIcon {
+  align-items: center;
+  background: #dbeafe;
+  border-radius: 50%;
+  color: #1d4ed8;
+  display: inline-flex;
+  height: 56px;
+  justify-content: center;
+  margin-bottom: 6px;
+  width: 56px;
+}
+
+.mchatEmpty strong {
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.mchatEmpty p {
+  font-size: 0.84rem;
+  margin: 0;
+  max-width: 300px;
+}
+
+.mchatSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.mchatSkeletonBubble {
+  animation: mchatShimmer 1.2s ease-in-out infinite;
+  background: linear-gradient(90deg, #e2e8f0 0%, #f8fafc 50%, #e2e8f0 100%);
+  background-size: 200% 100%;
+  border-radius: 14px;
+  height: 40px;
+  width: 62%;
+}
+
+.mchatSkeletonBubble--own {
+  align-self: flex-end;
+  width: 48%;
+}
+
+.mchatSkeletonBubble--short {
+  width: 36%;
+}
+
+@keyframes mchatShimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ── New messages pill ── */
+.mchatNewPill {
+  align-items: center;
+  background: #1d4ed8;
+  border: none;
+  border-radius: 999px;
+  bottom: 96px;
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 600;
+  gap: 4px;
+  left: 50%;
+  padding: 6px 14px;
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+/* ── Composer ── */
+.mchatComposer {
+  align-items: flex-end;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 4px;
+}
+
+.mchatInputWrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.mchatInputWrap textarea {
+  background: #f8fafc;
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  box-sizing: border-box;
+  color: #0f172a;
+  display: block;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  max-height: 132px;
+  padding: 10px 16px;
+  resize: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  width: 100%;
+}
+
+.mchatInputWrap textarea:focus {
+  background: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.mchatCounter {
+  background: #ffffff;
+  border-radius: 999px;
+  bottom: -8px;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0 6px;
+  position: absolute;
+  right: 14px;
+}
+
+.mchatCounter--max {
+  color: #b91c1c;
+}
+
+.mchatSend {
+  align-items: center;
+  background: #1d4ed8;
+  border: none;
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 42px;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+  width: 42px;
+}
+
+.mchatSend:hover:not(:disabled) {
+  background: #1e40af;
+}
+
+.mchatSend:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.mchatSend:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.mchatHint {
+  background: #ffffff;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  margin: 0;
+  padding: 2px 20px 10px;
+}
+
+.mchatReadOnly {
+  align-items: center;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  color: #475569;
+  display: flex;
+  font-size: 0.82rem;
+  gap: 8px;
+  justify-content: center;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.mchatError {
+  background: #fef2f2;
+  border-top: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.82rem;
+  margin: 0;
+  padding: 8px 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mchatRow,
+  .mchatStatus--live .mchatStatusDot,
+  .mchatSkeletonBubble {
+    animation: none;
+  }
+}

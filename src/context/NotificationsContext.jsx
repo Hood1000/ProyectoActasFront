@@ -186,7 +186,7 @@ export const NotificationsProvider = ({ children }) => {
               actionHref: `/dashboard/reuniones?meeting=${meeting.id}`,
               actionLabel: "Ver detalle",
               key: `meeting-scheduled:${meeting.id}:${meeting.date}`,
-              message: `Se agendó la reunión \"${meeting.title}\" para ${new Date(meeting.date).toLocaleString("es-VE", { dateStyle: "medium", timeStyle: "short" })}. Revisa los detalles y mantente atento a la asistencia.`,
+              message: `Se agendó la reunión "${meeting.title}" para ${new Date(meeting.date).toLocaleString("es-VE", { dateStyle: "medium", timeStyle: "short" })}. Revisa los detalles y mantente atento a la asistencia.`,
               title: "Nueva reunión agendada",
               type: "info",
             });
@@ -199,7 +199,7 @@ export const NotificationsProvider = ({ children }) => {
               actionHref: `/dashboard/reuniones?meeting=${meeting.id}`,
               actionLabel: "Confirmar asistencia",
               key: `attendance-window:${meeting.id}:${meeting.attendanceClosesAt}`,
-              message: `La reunión \"${meeting.title}\" está dentro de la ventana de asistencia. Puedes confirmarla desde el detalle.`,
+              message: `La reunión "${meeting.title}" está dentro de la ventana de asistencia. Puedes confirmarla desde el detalle.`,
               title: "Asistencia abierta",
               type: "warning",
             });

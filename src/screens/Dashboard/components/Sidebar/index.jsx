@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { IconClipboardList, IconGavel, IconListCheck, IconUserX } from "@tabler/icons-react";
 import { useAuth } from "../../../../context/AuthContext";
 import "./styles.css";
 
@@ -16,6 +17,14 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse }) => {
 
   const canManageUsers = user?.role === "ADMIN";
   const canManageMeetings = ["ADMIN", "SECRETARIO"].includes(user?.role || "");
+  const canProposePoints = ["DOCENTE", "SECRETARIO"].includes(user?.role || "");
+
+  const extraLinks = [
+    canProposePoints && { icon: IconClipboardList, label: "Agenda", to: "/dashboard/agenda" },
+    { icon: IconGavel, label: "Votaciones", to: "/dashboard/voting" },
+    canManageMeetings && { icon: IconListCheck, label: "Asistencia", to: "/dashboard/attendance" },
+    canManageMeetings && { icon: IconUserX, label: "Inasistencias", to: "/dashboard/sanctions" },
+  ].filter(Boolean);
 
   const handleLogout = () => {
     logout();
@@ -89,6 +98,14 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse }) => {
             <span className="navText">Reuniones</span>
           </NavLink>
         </li>
+        {extraLinks.map(({ icon: LinkIcon, label, to }) => (
+          <li key={to}>
+            <NavLink title={label} to={to} className={({ isActive }) => (isActive ? "active" : "")}>
+              <LinkIcon stroke={2} />
+              <span className="navText">{label}</span>
+            </NavLink>
+          </li>
+        ))}
         <li>
           <NavLink
             title="Mi Perfil"

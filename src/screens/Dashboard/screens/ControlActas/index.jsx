@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { IconUpload, IconX } from "@tabler/icons-react";
+import { IconListCheck, IconUpload, IconX } from "@tabler/icons-react";
 import { useAuth } from "../../../../context/AuthContext";
 import meetingsService from "../../../../api/services/meetingsService";
 import "./styles.css";
@@ -58,9 +58,6 @@ const STATUS_FILTERS = [
 
 const WORK_HOURS = { start: 7, end: 18 };
 
-const AUTO_CANCEL_REASON =
-  "La reunión no se realizó en la fecha programada y fue cancelada automáticamente por el sistema.";
-
 const MIN_CANCEL_REASON_LENGTH = 10;
 
 const CATEGORY_TO_TYPE = {
@@ -114,18 +111,6 @@ const validateMeetingSchedule = (dateValue) => {
   return "";
 };
 
-const isMeetingExpiredByDay = (meetingDate) => {
-  if (!meetingDate) return false;
-  const startDate = new Date(meetingDate);
-  if (Number.isNaN(startDate.getTime())) return false;
-  const nextDayStart = new Date(
-    startDate.getFullYear(),
-    startDate.getMonth(),
-    startDate.getDate() + 1,
-  );
-  return Date.now() >= nextDayStart.getTime();
-};
-
 const toDateTimeLocal = (value) => {
   if (!value) return "";
   const parsed = new Date(value);
@@ -167,6 +152,9 @@ const ControlActas = () => {
   const [actaFile, setActaFile] = useState(null);
   const [isFinalizingMeeting, setIsFinalizingMeeting] = useState(false);
   const [finalizeMsg, setFinalizeMsg] = useState({ text: "", type: "error" });
+  const [isConfirmingConsolidate, setIsConfirmingConsolidate] = useState(false);
+  const [isConsolidating, setIsConsolidating] = useState(false);
+  const [consolidateMsg, setConsolidateMsg] = useState({ text: "", type: "error" });
 
   const detailMeeting = useMemo(
     () => meetings.find((m) => m.id === detailMeetingId) || null,
@@ -180,23 +168,9 @@ const ControlActas = () => {
   const hydrateData = async () => {
     setIsLoading(true);
     try {
+      // Las reuniones vencidas las cancela el backend (tarea programada cada minuto).
       const meetingsResponse = await meetingsService.list();
-      const incomingMeetings = Array.isArray(meetingsResponse) ? meetingsResponse : [];
-      const meetingsToAutoCancel = incomingMeetings.filter(
-        (meeting) => isMeetingEditable(meeting) && isMeetingExpiredByDay(meeting.date),
-      );
-
-      if (meetingsToAutoCancel.length > 0) {
-        await Promise.all(
-          meetingsToAutoCancel.map((meeting) =>
-            meetingsService.cancel(meeting.id, AUTO_CANCEL_REASON),
-          ),
-        );
-        const refreshedResponse = await meetingsService.list();
-        setMeetings(Array.isArray(refreshedResponse) ? refreshedResponse : []);
-      } else {
-        setMeetings(incomingMeetings);
-      }
+      setMeetings(Array.isArray(meetingsResponse) ? meetingsResponse : []);
       setErrorMsg("");
     } catch {
       setErrorMsg("No fue posible cargar la información de reuniones. Intenta de nuevo.");
@@ -225,6 +199,8 @@ const ControlActas = () => {
   const resetFinalizeState = () => {
     setActaFile(null);
     setFinalizeMsg({ text: "", type: "error" });
+    setIsConfirmingConsolidate(false);
+    setConsolidateMsg({ text: "", type: "error" });
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -347,6 +323,32 @@ const ControlActas = () => {
       );
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const handleConsolidateAgenda = async () => {
+    if (!detailMeetingId) return;
+    setIsConsolidating(true);
+    setConsolidateMsg({ text: "", type: "error" });
+    try {
+      const result = await meetingsService.consolidateAgenda(detailMeetingId);
+      const pending = result?.pendingCount || 0;
+      setConsolidateMsg({
+        text:
+          pending > 0
+            ? `Agenda consolidada. ${pending} punto(s) pendiente(s) quedaron fuera del orden del día.`
+            : "Agenda consolidada. Ya no se reciben nuevos puntos.",
+        type: "success",
+      });
+      setIsConfirmingConsolidate(false);
+      await hydrateData();
+    } catch (err) {
+      setConsolidateMsg({
+        text: err?.response?.data?.message || "No se pudo consolidar la agenda.",
+        type: "error",
+      });
+    } finally {
+      setIsConsolidating(false);
     }
   };
 
@@ -813,7 +815,69 @@ const ControlActas = () => {
                 </div>
               )}
 
-              {canEditMeetings && isMeetingEditable(detailMeeting) && (
+              {canEditMeetings &&
+                ((isMeetingEditable(detailMeeting) && !detailMeeting.agendaConsolidated) ||
+                  consolidateMsg.text) && (
+                <>
+                  <hr className="controlActasDivider" />
+                  <div className="controlActasFinalizeSection">
+                    <div className="controlActasFinalizeSectionHeader">
+                      <IconListCheck size={18} />
+                      <h4>Consolidar orden del día</h4>
+                    </div>
+                    {!detailMeeting.agendaConsolidated && (
+                      <>
+                        <p className="actaCardMeta">
+                          Cierra la recepción de puntos y fija la agenda con los puntos aprobados (
+                          {(detailMeeting.agendaPoints || []).filter((p) => p.status === "APROBADO").length}{" "}
+                          aprobados,{" "}
+                          {(detailMeeting.agendaPoints || []).filter((p) => p.status === "PENDIENTE").length}{" "}
+                          pendientes de revisión). Los pendientes no entrarán en el orden del día.
+                        </p>
+                        {isConfirmingConsolidate ? (
+                          <div className="controlActasFormActions">
+                            <button
+                              className="controlActasSecondaryBtn"
+                              onClick={() => setIsConfirmingConsolidate(false)}
+                              type="button"
+                            >
+                              Volver
+                            </button>
+                            <button
+                              className="controlActasPrimaryBtn"
+                              disabled={isConsolidating}
+                              onClick={handleConsolidateAgenda}
+                              type="button"
+                            >
+                              {isConsolidating ? "Consolidando..." : "Sí, consolidar agenda"}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            className="controlActasFinalizeBtn"
+                            onClick={() => setIsConfirmingConsolidate(true)}
+                            type="button"
+                          >
+                            Consolidar agenda
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {consolidateMsg.text && (
+                      <p
+                        className={
+                          consolidateMsg.type === "success" ? "controlActasSuccess" : "controlActasError"
+                        }
+                      >
+                        {consolidateMsg.text}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Se puede finalizar mientras la reunión no esté cerrada ni cancelada (también en curso). */}
+              {canEditMeetings && canCancelMeeting(detailMeeting) && (
                 <>
                   <hr className="controlActasDivider" />
                   <div className="controlActasFinalizeSection">

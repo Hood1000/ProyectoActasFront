@@ -336,11 +336,13 @@
 /* ── Detail panel ── */
 .reunionesDetailPanel,
 .reunionesPointPanel {
+  animation: reunionesSlideIn 0.22s ease-out;
   background: #ffffff;
   box-shadow: -16px 0 32px rgba(15, 23, 42, 0.14);
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   max-width: 480px;
   overflow-y: auto;
   position: fixed;
@@ -348,6 +350,79 @@
   top: 0;
   width: min(100%, 480px);
   z-index: 1001;
+}
+
+/* El detalle aloja chat y votaciones: más ancho y cada pestaña con su propio scroll. */
+.reunionesDetailPanel {
+  max-width: 680px;
+  overflow: hidden;
+  width: min(100%, 680px);
+}
+
+.reunionesDetailPanel [hidden] {
+  display: none !important;
+}
+
+@keyframes reunionesSlideIn {
+  from { opacity: 0.6; transform: translateX(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── Tabs ── */
+.reunionesTabs {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 0 16px;
+}
+
+.reunionesTab {
+  align-items: center;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  gap: 6px;
+  margin-bottom: -1px;
+  padding: 12px 12px 10px;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.reunionesTab:hover {
+  color: #0f172a;
+}
+
+.reunionesTab.isActive {
+  border-bottom-color: #1d4ed8;
+  color: #1d4ed8;
+}
+
+.reunionesTabBadge {
+  background: #dc2626;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 18px;
+  padding: 3px 6px;
+  text-align: center;
+}
+
+.reunionesTabPane--chat {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .reunionesDetailHeader {
@@ -396,6 +471,8 @@
   flex: 1;
   flex-direction: column;
   gap: 20px;
+  min-height: 0;
+  overflow-y: auto;
   padding: 20px;
 }
 
@@ -565,86 +642,10 @@
   margin: 0;
 }
 
-/* ── Chat section ── */
-.reunionesChatList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  list-style: none;
-  margin: 0;
-  max-height: 260px;
-  overflow-y: auto;
-  padding: 0;
-}
-
-.reunionesChatItem {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-}
-
-.reunionesChatItem--own {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-}
-
-.reunionesChatMeta {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-}
-
-.reunionesChatMeta strong {
-  color: #0f172a;
-  font-size: 0.82rem;
-}
-
-.reunionesChatMeta span {
-  color: #64748b;
-  font-size: 0.75rem;
-}
-
-.reunionesChatItem p {
-  color: #334155;
-  font-size: 0.84rem;
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.reunionesChatForm {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.reunionesChatForm textarea {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 0.9rem;
-  padding: 10px;
-  resize: vertical;
-}
-
-.reunionesChatForm textarea:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-  outline: none;
-}
-
-.reunionesChatActions {
-  display: flex;
-  justify-content: flex-end;
-}
-
 /* ── Detail panel footer ── */
 .reunionesDetailFooter {
   border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   padding: 14px 20px;
@@ -700,6 +701,13 @@
 }
 
 /* ── Responsive ── */
+@media (prefers-reduced-motion: reduce) {
+  .reunionesDetailPanel,
+  .reunionesPointPanel {
+    animation: none;
+  }
+}
+
 @media (max-width: 768px) {
   .reunionesSidebar {
     display: none;

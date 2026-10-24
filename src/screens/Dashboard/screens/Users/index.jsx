@@ -64,7 +64,7 @@ const Users = () => {
           row.id === targetUser.id ? mapUserRow(updatedUser) : row,
         ),
       );
-    } catch (err) {
+    } catch {
       setActionError(ACTION_ERROR_MESSAGE);
     } finally {
       setActionLoadingId(null);
@@ -78,7 +78,7 @@ const Users = () => {
     try {
       const apiUsers = await usersService.list();
       setUsers(Array.isArray(apiUsers) ? apiUsers.map(mapUserRow) : []);
-    } catch (err) {
+    } catch {
       setError(LOAD_ERROR_MESSAGE);
       setUsers([]);
     } finally {

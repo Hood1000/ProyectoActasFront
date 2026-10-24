@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { IconX } from "@tabler/icons-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { IconGavel, IconInfoCircle, IconMessages, IconX } from "@tabler/icons-react";
 import { useSearchParams } from "react-router-dom";
 import meetingsService from "../../../../api/services/meetingsService";
 import { useAuth } from "../../../../context/AuthContext";
 import { useNotifications } from "../../../../context/NotificationsContext";
+import MeetingChat from "../../../../components/MeetingChat";
+import MeetingPolls from "../../../../components/MeetingPolls";
 import "./styles.css";
 
 const STATUS_TABS = [
@@ -33,16 +35,11 @@ const formatDate = (value) => {
   });
 };
 
-const formatChatDate = (value) => {
-  if (!value) return "Ahora";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "Ahora";
-  return parsed.toLocaleString("es-VE", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "America/Caracas",
-  });
-};
+const DETAIL_TABS = [
+  { icon: IconInfoCircle, label: "Detalle", value: "detalle" },
+  { icon: IconMessages, label: "Chat", value: "chat" },
+  { icon: IconGavel, label: "Votaciones", value: "votaciones" },
+];
 
 const PREVIOUS_MINUTE_TITLE = "lectura del acta anterior";
 
@@ -81,21 +78,19 @@ const Actas = () => {
   const [pageMessage, setPageMessage] = useState("");
   const [panelMessage, setPanelMessage] = useState("");
   const [attendanceMsg, setAttendanceMsg] = useState("");
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatDraft, setChatDraft] = useState("");
-  const [chatError, setChatError] = useState("");
-  const [isChatLoading, setIsChatLoading] = useState(false);
-  const [isChatSending, setIsChatSending] = useState(false);
+  const [activeTab, setActiveTab] = useState("detalle");
+  const [chatUnread, setChatUnread] = useState(0);
 
   const canSubmitByRole = ["DOCENTE", "SECRETARIO"].includes(user?.role || "");
   const canReview = ["ADMIN", "SECRETARIO"].includes(user?.role || "");
   const canConfirmAttendanceForUser = ["ADMIN", "DOCENTE", "SECRETARIO"].includes(user?.role || "");
-  const canUseChat = ["ADMIN", "DOCENTE", "SECRETARIO"].includes(user?.role || "");
 
   const detailMeeting = useMemo(
     () => meetings.find((m) => m.id === detailMeetingId) || null,
     [meetings, detailMeetingId],
   );
+
+  const handleChatUnreadChange = useCallback((count) => setChatUnread(count), []);
 
   const pointPanelMeeting = useMemo(
     () => meetings.find((m) => m.id === pointPanelMeetingId) || null,
@@ -140,30 +135,19 @@ const Actas = () => {
     const meetingIdFromQuery = searchParams.get("meeting");
     if (!meetingIdFromQuery || meetings.length === 0) return;
 
+    // Abrir desde una notificación (?meeting=id). No se reabre si ya está abierta,
+    // para no perder la pestaña activa cuando se recarga la lista de reuniones.
     const targetMeeting = meetings.find((meeting) => meeting.id === meetingIdFromQuery);
-    if (targetMeeting) {
+    if (targetMeeting && targetMeeting.id !== detailMeetingId) {
       setDetailMeetingId(targetMeeting.id);
+      setActiveTab("detalle");
+      setChatUnread(0);
       setAttendanceMsg("");
-      setChatDraft("");
-      setChatError("");
       setIsPointPanelOpen(false);
       setPointPanelMeetingId(null);
       setIsPanelOpen(false);
-      setIsChatLoading(true);
-      meetingsService
-        .listMeetingChatMessages(targetMeeting.id)
-        .then((messages) => {
-          setChatMessages(Array.isArray(messages) ? messages : []);
-        })
-        .catch(() => {
-          setChatError("No se pudo cargar el chat de esta reunión.");
-          setChatMessages([]);
-        })
-        .finally(() => {
-          setIsChatLoading(false);
-        });
     }
-  }, [meetings, searchParams, setIsPanelOpen]);
+  }, [detailMeetingId, meetings, searchParams, setIsPanelOpen]);
 
   useEffect(() => {
     if (!isPointPanelOpen && !detailMeetingId) return undefined;
@@ -176,54 +160,20 @@ const Actas = () => {
 
   const openDetail = (meeting) => {
     setDetailMeetingId(meeting.id);
+    setActiveTab("detalle");
+    setChatUnread(0);
     setAttendanceMsg("");
-    setChatDraft("");
-    setChatError("");
     setIsPointPanelOpen(false);
     setPointPanelMeetingId(null);
     setSearchParams({ meeting: meeting.id });
-    setIsChatLoading(true);
-    meetingsService
-      .listMeetingChatMessages(meeting.id)
-      .then((messages) => {
-        setChatMessages(Array.isArray(messages) ? messages : []);
-      })
-      .catch(() => {
-        setChatError("No se pudo cargar el chat de esta reunión.");
-        setChatMessages([]);
-      })
-      .finally(() => {
-        setIsChatLoading(false);
-      });
   };
 
   const closeDetail = () => {
     setDetailMeetingId(null);
     setAttendanceMsg("");
-    setChatMessages([]);
-    setChatDraft("");
-    setChatError("");
+    setChatUnread(0);
     if (searchParams.get("meeting")) {
       setSearchParams({});
-    }
-  };
-
-  const handleSendChatMessage = async (e) => {
-    e.preventDefault();
-    if (!detailMeeting?.id || !canUseChat) return;
-    const content = chatDraft.trim();
-    if (!content) return;
-
-    setIsChatSending(true);
-    setChatError("");
-    try {
-      const created = await meetingsService.postMeetingChatMessage(detailMeeting.id, { content });
-      setChatMessages((prev) => [...prev, created]);
-      setChatDraft("");
-    } catch (err) {
-      setChatError(err?.response?.data?.message || "No se pudo enviar el mensaje.");
-    } finally {
-      setIsChatSending(false);
     }
   };
 
@@ -460,7 +410,43 @@ const Actas = () => {
               </button>
             </div>
 
-            <div className="reunionesDetailBody">
+            <div className="reunionesTabs" role="tablist">
+              {DETAIL_TABS.map(({ icon: TabIcon, label, value }) => (
+                <button
+                  aria-selected={activeTab === value}
+                  className={`reunionesTab ${activeTab === value ? "isActive" : ""}`}
+                  key={value}
+                  onClick={() => setActiveTab(value)}
+                  role="tab"
+                  type="button"
+                >
+                  <TabIcon size={16} />
+                  {label}
+                  {value === "chat" && chatUnread > 0 && (
+                    <span className="reunionesTabBadge">{chatUnread > 99 ? "99+" : chatUnread}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* El chat queda montado al cambiar de pestaña para seguir contando los no leídos. */}
+            <div className="reunionesTabPane reunionesTabPane--chat" hidden={activeTab !== "chat"}>
+              <MeetingChat
+                key={detailMeeting.id}
+                isActive={activeTab === "chat"}
+                meeting={detailMeeting}
+                onUnreadChange={handleChatUnreadChange}
+                user={user}
+              />
+            </div>
+
+            {activeTab === "votaciones" && (
+              <div className="reunionesTabPane reunionesDetailBody">
+                <MeetingPolls key={detailMeeting.id} meeting={detailMeeting} user={user} />
+              </div>
+            )}
+
+            <div className="reunionesDetailBody" hidden={activeTab !== "detalle"}>
               <div className="reunionesInfoGrid">
                 <div className="reunionesInfoItem">
                   <span className="reunionesInfoLabel">Fecha y hora</span>
@@ -584,57 +570,6 @@ const Actas = () => {
                 </section>
               )}
 
-              <section className="reunionesSection">
-                <h4 className="reunionesSectionTitle">Chat de la reunión</h4>
-
-                {isChatLoading ? (
-                  <div className="reunionesMessage">Cargando conversación...</div>
-                ) : chatMessages.length === 0 ? (
-                  <div className="reunionesMessage">Aún no hay mensajes en esta reunión.</div>
-                ) : (
-                  <ul className="reunionesChatList">
-                    {chatMessages.map((message) => {
-                      const isOwn = message?.author?.id === user?.id;
-                      return (
-                        <li
-                          key={message.id}
-                          className={`reunionesChatItem ${isOwn ? "reunionesChatItem--own" : ""}`}
-                        >
-                          <div className="reunionesChatMeta">
-                            <strong>{message?.author?.name || "Usuario"}</strong>
-                            <span>{formatChatDate(message?.createdAt)}</span>
-                          </div>
-                          <p>{message?.content || ""}</p>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-
-                {canUseChat && (
-                  <form className="reunionesChatForm" onSubmit={handleSendChatMessage}>
-                    <textarea
-                      maxLength={2000}
-                      onChange={(e) => setChatDraft(e.target.value)}
-                      placeholder="Escribe un mensaje para esta reunión"
-                      rows={3}
-                      value={chatDraft}
-                    />
-                    <div className="reunionesChatActions">
-                      <button
-                        className="reunionBtn reunionBtn--primary"
-                        disabled={isChatSending || !chatDraft.trim()}
-                        type="submit"
-                      >
-                        {isChatSending ? "Enviando..." : "Enviar mensaje"}
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {chatError && <p className="reunionesAttendanceError">{chatError}</p>}
-              </section>
-
               {(() => {
                 const attendanceState = getAttendanceStateForUser(detailMeeting, user?.id);
                 const attendanceOpened = isInConfirmationWindow(detailMeeting);
@@ -681,7 +616,7 @@ const Actas = () => {
               })()}
             </div>
 
-            <div className="reunionesDetailFooter">
+            <div className="reunionesDetailFooter" hidden={activeTab !== "detalle"}>
               <button
                 className="reunionBtn reunionBtn--secondary"
                 onClick={closeDetail}

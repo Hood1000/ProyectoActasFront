@@ -31,7 +31,7 @@ const Agenda = () => {
     try {
       const response = await meetingsService.getAvailableAgenda();
       setAgendaState(response);
-    } catch (err) {
+    } catch {
       setAgendaState({
         available: false,
         meeting: null,

@@ -1,10 +1,82 @@
 .votingPage {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
   padding: 2.5rem;
-  max-width: 680px;
+  max-width: 760px;
   width: 100%;
+}
+
+.votingHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.votingRefreshBtn {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  color: #475569;
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.votingRefreshBtn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.votingSelector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.votingSelectorBtn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  color: #475569;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 7px 14px;
+}
+
+.votingSelectorBtn.isActive {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.votingMeetingMeta {
+  color: #64748b;
+  font-size: 0.84rem;
+  margin: 4px 0 0;
+}
+
+.votingStatValue.isOk {
+  color: #15803d;
+}
+
+.votingStatValue.isBad {
+  color: #b91c1c;
+}
+
+.votingPollsCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
 }
 
 .votingHeader h2 {
@@ -48,14 +120,14 @@
 }
 
 .votingEmptyIcon {
-  background: #e2e8f0;
+  align-items: center;
+  background: #ede9fe;
   border-radius: 50%;
-  color: #64748b;
-  font-size: 1.5rem;
-  font-weight: 700;
-  height: 52px;
-  line-height: 52px;
-  width: 52px;
+  color: #6d28d9;
+  display: inline-flex;
+  height: 56px;
+  justify-content: center;
+  width: 56px;
 }
 
 .votingEmptyState h3 {
@@ -202,4 +274,15 @@
   box-shadow: none;
   color: #94a3b8;
   cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .votingPage {
+    padding: 1.25rem 1rem;
+  }
+
+  .votingPollsCard,
+  .votingMeetingCard {
+    padding: 1rem;
+  }
 }
