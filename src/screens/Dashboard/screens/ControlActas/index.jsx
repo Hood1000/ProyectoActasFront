@@ -13,7 +13,7 @@ import { DEFAULT_PAGE_SIZE } from "../../../../components/Pagination/constants";
 import { clampPage, paginate } from "../../../../components/Pagination/utils";
 import "./styles.css";
 
-const meetingTypes = ["Consejo de carrera", "SIP pedagógico", "Asambleas"];
+const meetingTypes = ["Consejo Operativo (CICVSO)", "Consejo Pedagógico (CICVSP)", "Asambleas"];
 const TYPE_PREFERENCE_KEY = "controlReuniones:tipo";
 
 const modalityOptions = [
@@ -40,14 +40,14 @@ const PREVIOUS_MINUTE_POINT = {
 };
 
 const categoryMap = {
-  "Consejo de carrera": "CONSEJO_CARRERA",
-  "SIP pedagógico": "CID_PEDAGOGICO",
+  "Consejo Operativo (CICVSO)": "CONSEJO_CARRERA",
+  "Consejo Pedagógico (CICVSP)": "CID_PEDAGOGICO",
   Asambleas: "ASAMBLEA",
 };
 
 const categoryOptions = [
-  { label: "Consejo de carrera", value: "CONSEJO_CARRERA" },
-  { label: "SIP pedagógico", value: "CID_PEDAGOGICO" },
+  { label: "Consejo Operativo (CICVSO)", value: "CONSEJO_CARRERA" },
+  { label: "Consejo Pedagógico (CICVSP)", value: "CID_PEDAGOGICO" },
   { label: "Asambleas", value: "ASAMBLEA" },
 ];
 
@@ -63,13 +63,13 @@ const WORK_HOURS = { start: 7, end: 18 };
 const MIN_CANCEL_REASON_LENGTH = 10;
 
 const CATEGORY_TO_TYPE = {
-  CONSEJO_CARRERA: "Consejo de carrera",
-  CID_PEDAGOGICO: "SIP pedagógico",
+  CONSEJO_CARRERA: "Consejo Operativo (CICVSO)",
+  CID_PEDAGOGICO: "Consejo Pedagógico (CICVSP)",
   ASAMBLEA: "Asambleas",
 };
 
 const resolveMeetingType = (meeting) =>
-  CATEGORY_TO_TYPE[meeting?.meetingCategory] || "Consejo de carrera";
+  CATEGORY_TO_TYPE[meeting?.meetingCategory] || "Consejo Operativo (CICVSO)";
 
 const formatMeetingDate = (value) => {
   if (!value) return "Sin fecha";
