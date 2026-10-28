@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { IconGavel, IconInfoCircle, IconMessages, IconSearchOff, IconX } from "@tabler/icons-react";
-import { useSearchParams } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { IconAdjustmentsHorizontal, IconChevronDown, IconFileText, IconPresentation, IconSearchOff, IconX } from "@tabler/icons-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import meetingsService from "../../../../api/services/meetingsService";
 import EmptyState from "../../../../components/EmptyState";
 import MeetingsFilters from "../../../../components/MeetingsFilters";
@@ -11,8 +11,8 @@ import { DEFAULT_PAGE_SIZE } from "../../../../components/Pagination/constants";
 import { clampPage, paginate } from "../../../../components/Pagination/utils";
 import { useAuth } from "../../../../context/AuthContext";
 import { useNotifications } from "../../../../context/NotificationsContext";
-import MeetingChat from "../../../../components/MeetingChat";
-import MeetingPolls from "../../../../components/MeetingPolls";
+import { openMeetingEvidence } from "../../../../utils/evidence";
+import { readSessionPreference, writeSessionPreference } from "../../../../utils/sessionPreference";
 import "./styles.css";
 
 const STATUS_TABS = [
@@ -30,6 +30,8 @@ const STATUS_LABELS = {
 };
 
 const EMPTY_POINT_FORM = { description: "", title: "" };
+const STATUS_PREFERENCE_KEY = "reuniones:estado";
+const STATUS_VALUES = STATUS_TABS.map((tab) => tab.value);
 
 const formatDate = (value) => {
   if (!value) return "Sin fecha";
@@ -41,12 +43,6 @@ const formatDate = (value) => {
     timeZone: "America/Caracas",
   });
 };
-
-const DETAIL_TABS = [
-  { icon: IconInfoCircle, label: "Detalle", value: "detalle" },
-  { icon: IconMessages, label: "Chat", value: "chat" },
-  { icon: IconGavel, label: "Votaciones", value: "votaciones" },
-];
 
 const PREVIOUS_MINUTE_TITLE = "lectura del acta anterior";
 
@@ -73,9 +69,14 @@ const isInConfirmationWindow = (meeting) => {
 const Actas = () => {
   const { user } = useAuth();
   const { setIsPanelOpen } = useNotifications();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [meetings, setMeetings] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState("PROGRAMADA");
+  // Recuerda la pestaña de estado al ir a la sesión de una reunión y volver.
+  const [selectedStatus, setSelectedStatus] = useState(() =>
+    readSessionPreference(STATUS_PREFERENCE_KEY, STATUS_VALUES, "PROGRAMADA"),
+  );
+  const [isSubnavOpen, setIsSubnavOpen] = useState(false);
   const [listFilters, setListFilters] = useState(EMPTY_MEETING_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -88,8 +89,9 @@ const Actas = () => {
   const [pageMessage, setPageMessage] = useState("");
   const [panelMessage, setPanelMessage] = useState("");
   const [attendanceMsg, setAttendanceMsg] = useState("");
-  const [activeTab, setActiveTab] = useState("detalle");
-  const [chatUnread, setChatUnread] = useState(0);
+  // Último ?meeting= ya atendido: evita reabrir el detalle mientras la URL todavía no se
+  // actualizó tras cerrarlo (la navegación del router llega un render después).
+  const handledQueryMeetingRef = useRef(null);
 
   const canSubmitByRole = ["DOCENTE", "SECRETARIO"].includes(user?.role || "");
   const canReview = ["ADMIN", "SECRETARIO"].includes(user?.role || "");
@@ -99,8 +101,6 @@ const Actas = () => {
     () => meetings.find((m) => m.id === detailMeetingId) || null,
     [meetings, detailMeetingId],
   );
-
-  const handleChatUnreadChange = useCallback((count) => setChatUnread(count), []);
 
   const pointPanelMeeting = useMemo(
     () => meetings.find((m) => m.id === pointPanelMeetingId) || null,
@@ -127,10 +127,26 @@ const Actas = () => {
   const getCountByStatus = (status) =>
     searchedMeetings.filter((m) => m.status === status).length;
 
+  useEffect(() => {
+    writeSessionPreference(STATUS_PREFERENCE_KEY, selectedStatus);
+  }, [selectedStatus]);
+
   const selectStatus = (status) => {
     setSelectedStatus(status);
     setCurrentPage(1);
+    setIsSubnavOpen(false);
   };
+
+  // En móvil el submenú es un panel deslizable: Escape lo cierra.
+  useEffect(() => {
+    if (!isSubnavOpen) return undefined;
+    const handleKey = (event) => {
+      if (event.key === "Escape") setIsSubnavOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isSubnavOpen]);
+
 
   const handleListFilterChange = (key, value) => {
     setListFilters((prev) => ({ ...prev, [key]: value }));
@@ -175,15 +191,23 @@ const Actas = () => {
 
   useEffect(() => {
     const meetingIdFromQuery = searchParams.get("meeting");
-    if (!meetingIdFromQuery || meetings.length === 0) return;
+    if (!meetingIdFromQuery) {
+      handledQueryMeetingRef.current = null;
+      return;
+    }
+    if (meetings.length === 0 || handledQueryMeetingRef.current === meetingIdFromQuery) return;
 
-    // Abrir desde una notificación (?meeting=id). No se reabre si ya está abierta,
-    // para no perder la pestaña activa cuando se recarga la lista de reuniones.
+    // Abrir desde una notificación o al volver de la sesión (?meeting=id), una sola vez por valor.
     const targetMeeting = meetings.find((meeting) => meeting.id === meetingIdFromQuery);
-    if (targetMeeting && targetMeeting.id !== detailMeetingId) {
+    if (!targetMeeting) return;
+    handledQueryMeetingRef.current = meetingIdFromQuery;
+    // La lista se ubica en el estado de la reunión abierta, para que su tarjeta esté a la vista.
+    if (STATUS_VALUES.includes(targetMeeting.status)) {
+      setSelectedStatus(targetMeeting.status);
+      setCurrentPage(1);
+    }
+    if (targetMeeting.id !== detailMeetingId) {
       setDetailMeetingId(targetMeeting.id);
-      setActiveTab("detalle");
-      setChatUnread(0);
       setAttendanceMsg("");
       setIsPointPanelOpen(false);
       setPointPanelMeetingId(null);
@@ -202,20 +226,19 @@ const Actas = () => {
 
   const openDetail = (meeting) => {
     setDetailMeetingId(meeting.id);
-    setActiveTab("detalle");
-    setChatUnread(0);
     setAttendanceMsg("");
     setIsPointPanelOpen(false);
     setPointPanelMeetingId(null);
-    setSearchParams({ meeting: meeting.id });
+    handledQueryMeetingRef.current = meeting.id;
+    // replace: abrir y cerrar el detalle no debe llenar el historial del botón "atrás".
+    setSearchParams({ meeting: meeting.id }, { replace: true });
   };
 
   const closeDetail = () => {
     setDetailMeetingId(null);
     setAttendanceMsg("");
-    setChatUnread(0);
     if (searchParams.get("meeting")) {
-      setSearchParams({});
+      setSearchParams({}, { replace: true });
     }
   };
 
@@ -325,9 +348,13 @@ const Actas = () => {
 
   return (
     <div className="reunionesContainer">
-      <aside className="reunionesSidebar">
-        <div className="reunionesSidebarHeader">
+      {isSubnavOpen && <div className="subnavBackdrop" onClick={() => setIsSubnavOpen(false)} />}
+      <aside className={`reunionesSidebar subnavDrawer ${isSubnavOpen ? "isMobileOpen" : ""}`}>
+        <div className="reunionesSidebarHeader subnavHeader">
           <h3>Estado</h3>
+          <button aria-label="Cerrar estados" className="subnavClose" onClick={() => setIsSubnavOpen(false)} type="button">
+            <IconX size={18} />
+          </button>
         </div>
         <ul className="reunionesStatusList">
           {STATUS_TABS.map((tab) => (
@@ -355,6 +382,19 @@ const Actas = () => {
             </p>
           </div>
         </header>
+
+        <button
+          aria-expanded={isSubnavOpen}
+          className="subnavToggle"
+          onClick={() => setIsSubnavOpen(true)}
+          type="button"
+        >
+          <IconAdjustmentsHorizontal size={18} />
+          <span>
+            <small>Estado:</small> {STATUS_LABELS[selectedStatus]} ({getCountByStatus(selectedStatus)})
+          </span>
+          <IconChevronDown size={16} />
+        </button>
 
         <MeetingsFilters
           filters={listFilters}
@@ -478,43 +518,7 @@ const Actas = () => {
               </button>
             </div>
 
-            <div className="reunionesTabs" role="tablist">
-              {DETAIL_TABS.map(({ icon: TabIcon, label, value }) => (
-                <button
-                  aria-selected={activeTab === value}
-                  className={`reunionesTab ${activeTab === value ? "isActive" : ""}`}
-                  key={value}
-                  onClick={() => setActiveTab(value)}
-                  role="tab"
-                  type="button"
-                >
-                  <TabIcon size={16} />
-                  {label}
-                  {value === "chat" && chatUnread > 0 && (
-                    <span className="reunionesTabBadge">{chatUnread > 99 ? "99+" : chatUnread}</span>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* El chat queda montado al cambiar de pestaña para seguir contando los no leídos. */}
-            <div className="reunionesTabPane reunionesTabPane--chat" hidden={activeTab !== "chat"}>
-              <MeetingChat
-                key={detailMeeting.id}
-                isActive={activeTab === "chat"}
-                meeting={detailMeeting}
-                onUnreadChange={handleChatUnreadChange}
-                user={user}
-              />
-            </div>
-
-            {activeTab === "votaciones" && (
-              <div className="reunionesTabPane reunionesDetailBody">
-                <MeetingPolls key={detailMeeting.id} meeting={detailMeeting} user={user} />
-              </div>
-            )}
-
-            <div className="reunionesDetailBody" hidden={activeTab !== "detalle"}>
+            <div className="reunionesDetailBody">
               <div className="reunionesInfoGrid">
                 <div className="reunionesInfoItem">
                   <span className="reunionesInfoLabel">Fecha y hora</span>
@@ -684,7 +688,7 @@ const Actas = () => {
               })()}
             </div>
 
-            <div className="reunionesDetailFooter" hidden={activeTab !== "detalle"}>
+            <div className="reunionesDetailFooter">
               <button
                 className="reunionBtn reunionBtn--secondary"
                 onClick={closeDetail}
@@ -692,6 +696,30 @@ const Actas = () => {
               >
                 Cerrar
               </button>
+              {detailMeeting.evidenceSignaturesUrl && (
+                <button
+                  className="reunionBtn reunionBtn--secondary"
+                  onClick={() =>
+                    openMeetingEvidence(detailMeeting.id).catch(() =>
+                      setAttendanceMsg("No se pudo abrir el acta firmada."),
+                    )
+                  }
+                  type="button"
+                >
+                  <IconFileText size={16} /> Ver acta firmada
+                </button>
+              )}
+              {/* Con la reunión cerrada el chat solo lo consultan Secretaría y Coordinación. */}
+              {(canReview ||
+                !(detailMeeting.isClosed || ["CANCELADA", "FINALIZADA"].includes(detailMeeting.status))) && (
+                <button
+                  className="reunionBtn reunionBtn--primary"
+                  onClick={() => navigate(`/dashboard/reuniones/${detailMeeting.id}/sesion`)}
+                  type="button"
+                >
+                  <IconPresentation size={16} /> {canReview ? "Ir a la sesión" : "Entrar a la sesión"}
+                </button>
+              )}
             </div>
           </aside>
         </>

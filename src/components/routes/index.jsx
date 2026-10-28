@@ -12,6 +12,7 @@ import Attendance from "../../screens/Dashboard/screens/Attendance";
 import Voting from "../../screens/Dashboard/screens/Voting";
 import Sanctions from "../../screens/Dashboard/screens/Sanctions";
 import Actas from "../../screens/Dashboard/screens/Actas";
+import MeetingSession from "../../screens/Dashboard/screens/MeetingSession";
 
 const RequireAuth = ({ children }) => {
   const { token, loading } = useAuth();
@@ -93,6 +94,7 @@ const ContenRoutes = () => {
             }
           />
           <Route path="reuniones" element={<Actas />} />
+          <Route path="reuniones/:id/sesion" element={<MeetingSession />} />
           <Route path="actas" element={<Actas />} />
         </Route>
       </Routes>

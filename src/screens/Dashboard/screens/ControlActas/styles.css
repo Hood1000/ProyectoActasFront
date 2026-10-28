@@ -716,6 +716,13 @@
   }
 }
 
+@media (max-width: 768px) {
+  /* El contenedor no usa gap: separa el botón del submenú de los filtros. */
+  .controlActasContainer .subnavToggle {
+    margin-bottom: 14px;
+  }
+}
+
 @media (max-width: 640px) {
   .mainContent {
     padding: 1.25rem;

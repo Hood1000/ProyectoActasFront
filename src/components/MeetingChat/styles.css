@@ -1,5 +1,9 @@
 .mchat {
-  background: #f1f5f9;
+  /* Fondo con textura sutil, al estilo de las apps de mensajería. */
+  background-color: #eef2f7;
+  background-image: radial-gradient(rgba(29, 78, 216, 0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  text-align: left;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -76,7 +80,7 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 8px 16px 16px;
+  padding: 8px clamp(12px, 6%, 80px) 16px;
   scrollbar-width: thin;
 }
 
@@ -86,6 +90,14 @@
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+/* Elementos intercalados en la conversación (p. ej. votaciones). */
+.mchatEmbed {
+  align-self: center;
+  margin: 12px 0;
+  max-width: 560px;
+  width: 100%;
 }
 
 .mchatDay {
@@ -198,9 +210,9 @@
 
 .mchatBubble {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px 16px 16px 6px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  border: 1px solid transparent;
+  border-radius: 4px 12px 12px 4px;
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.1);
   color: #1e293b;
   display: flex;
   flex-wrap: wrap;
@@ -210,26 +222,25 @@
 }
 
 .mchatBubble--first {
-  border-top-left-radius: 16px;
+  border-top-left-radius: 0;
 }
 
 .mchatBubble--last {
-  border-bottom-left-radius: 16px;
+  border-bottom-left-radius: 12px;
 }
 
 .mchatRow--own .mchatBubble {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-  border-radius: 16px 6px 6px 16px;
-  color: #ffffff;
+  background: #dbeafe;
+  border-radius: 12px 4px 4px 12px;
+  color: #0f172a;
 }
 
 .mchatRow--own .mchatBubble--first {
-  border-top-right-radius: 16px;
+  border-top-right-radius: 0;
 }
 
 .mchatRow--own .mchatBubble--last {
-  border-bottom-right-radius: 16px;
+  border-bottom-right-radius: 12px;
 }
 
 .mchatBubble p {
@@ -251,7 +262,7 @@
 }
 
 .mchatRow--own .mchatBubble time {
-  color: rgba(255, 255, 255, 0.72);
+  color: #64748b;
 }
 
 /* ── Empty & loading ── */
@@ -344,11 +355,11 @@
 /* ── Composer ── */
 .mchatComposer {
   align-items: flex-end;
-  background: #ffffff;
+  background: #f1f5f9;
   border-top: 1px solid #e2e8f0;
   display: flex;
   gap: 8px;
-  padding: 12px 16px 4px;
+  padding: 10px 16px 4px;
 }
 
 .mchatInputWrap {
@@ -358,9 +369,9 @@
 }
 
 .mchatInputWrap textarea {
-  background: #f8fafc;
-  border: 1px solid #d1d5db;
-  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   box-sizing: border-box;
   color: #0f172a;
   display: block;
@@ -426,7 +437,7 @@
 }
 
 .mchatHint {
-  background: #ffffff;
+  background: #f1f5f9;
   color: #94a3b8;
   font-size: 0.7rem;
   margin: 0;
@@ -460,5 +471,24 @@
   .mchatStatus--live .mchatStatusDot,
   .mchatSkeletonBubble {
     animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .mchatScroll {
+    padding: 6px 10px 12px;
+  }
+
+  .mchatBubbleWrap {
+    max-width: 85%;
+  }
+
+  .mchatComposer {
+    padding: 8px 10px;
+  }
+
+  /* En móvil Enter no envía con teclado virtual de forma natural; la pista sobra. */
+  .mchatHint {
+    display: none;
   }
 }

@@ -1,10 +1,10 @@
 import React from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { IconClipboardList, IconGavel, IconListCheck, IconUserX } from "@tabler/icons-react";
+import { IconClipboardList, IconGavel, IconListCheck, IconUserX, IconX } from "@tabler/icons-react";
 import { useAuth } from "../../../../context/AuthContext";
 import "./styles.css";
 
-const Sidebar = ({ isCollapsed = false, onToggleCollapse }) => {
+const Sidebar = ({ isCollapsed = false, isMobileOpen = false, onCloseMobile, onToggleCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -32,7 +32,7 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse }) => {
   };
 
   return (
-    <nav className={`sidebar ${isCollapsed ? "isCollapsed" : ""}`}>
+    <nav className={`sidebar ${isCollapsed ? "isCollapsed" : ""} ${isMobileOpen ? "isMobileOpen" : ""}`}>
       <div className="sidebar-header">
         <div className="sidebarBrandRow">
           <h3 className="sidebarBrandTitle">
@@ -51,6 +51,9 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="m15 19-7-7 7-7" />
               )}
             </svg>
+          </button>
+          <button aria-label="Cerrar menú" className="sidebarMobileClose" onClick={onCloseMobile} type="button">
+            <IconX size={18} />
           </button>
         </div>
         {user && <p className="sidebar-role">{roleLabel[user.role] || user.role}</p>}

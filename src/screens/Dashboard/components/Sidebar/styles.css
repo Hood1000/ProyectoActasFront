@@ -93,6 +93,20 @@
   width: 15px;
 }
 
+/* Cerrar el menú: solo en móvil, donde el menú es un panel deslizable. */
+.sidebarMobileClose {
+  align-items: center;
+  background: rgba(2, 6, 23, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  color: #e2e8f0;
+  cursor: pointer;
+  display: none;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
 .sidebar-role {
   margin: 10px 0 0;
   font-size: 12px;
@@ -249,5 +263,76 @@
   .nav-menu li a,
   .btn-logout {
     justify-content: center;
+  }
+}
+
+/* Móvil: el menú se oculta a un costado y se abre como panel deslizable desde la barra superior. */
+@media (max-width: 768px) {
+  .sidebar,
+  .sidebar.isCollapsed {
+    bottom: 0;
+    box-shadow: 0 0 40px rgba(2, 6, 23, 0.45);
+    height: 100dvh;
+    left: 0;
+    position: fixed;
+    top: 0;
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    visibility: hidden;
+    width: min(280px, 82vw);
+    z-index: 90;
+  }
+
+  .sidebar.isMobileOpen {
+    transform: none;
+    visibility: visible;
+  }
+
+  .sidebar .brandText,
+  .sidebar .navText,
+  .sidebar .sidebar-role,
+  .sidebar.isCollapsed .brandText,
+  .sidebar.isCollapsed .navText,
+  .sidebar.isCollapsed .sidebar-role {
+    opacity: 1;
+    pointer-events: auto;
+    width: auto;
+  }
+
+  .sidebar .sidebar-header,
+  .sidebar.isCollapsed .sidebar-header {
+    padding: 20px 16px 12px;
+    text-align: left;
+  }
+
+  .sidebar .sidebarBrandRow,
+  .sidebar.isCollapsed .sidebarBrandRow {
+    justify-content: space-between;
+  }
+
+  .sidebar .sidebarCollapseBtn {
+    display: none;
+  }
+
+  .sidebarMobileClose {
+    display: inline-flex;
+  }
+
+  .sidebar .nav-menu li a,
+  .sidebar.isCollapsed .nav-menu li a,
+  .sidebar .btn-logout,
+  .sidebar.isCollapsed .btn-logout {
+    gap: 12px;
+    justify-content: flex-start;
+  }
+
+  .sidebar.isCollapsed .nav-menu {
+    align-items: stretch;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .nav-menu li a {
+    font-size: 0.9rem;
+    padding: 12px;
   }
 }

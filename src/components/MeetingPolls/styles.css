@@ -320,7 +320,10 @@
 }
 
 .mpollMyVote {
+  align-items: center;
   color: #475569;
+  display: flex;
+  gap: 6px;
   font-size: 0.78rem;
   margin: -2px 0 0;
 }

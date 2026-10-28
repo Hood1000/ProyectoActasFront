@@ -92,18 +92,160 @@
   font-weight: 700;
 }
 
+.dashboardTopbarInfo {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+/* Botón del menú lateral: solo existe en móvil. */
+.dashboardMenuBtn {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  border-radius: 12px;
+  color: #0f172a;
+  cursor: pointer;
+  display: none;
+  flex-shrink: 0;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.dashboardSidebarBackdrop {
+  display: none;
+}
+
 .dashboardMainContent {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
 }
 
+@media (max-width: 768px) {
+  .dashboardMenuBtn {
+    display: inline-flex;
+  }
+
+  .dashboardTopbar {
+    gap: 12px;
+  }
+
+  .dashboardSidebarBackdrop {
+    animation: dashboardFadeIn 0.2s ease-out;
+    background: rgba(15, 23, 42, 0.5);
+    display: block;
+    inset: 0;
+    position: fixed;
+    z-index: 89;
+  }
+}
+
+@keyframes dashboardFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @media (max-width: 640px) {
   .dashboardTopbar {
-    padding: 14px 16px;
+    padding: 12px 14px;
   }
 
   .dashboardTopbarTitle {
     font-size: 1rem;
+  }
+}
+
+/*
+ * Submenú secundario de las pantallas (Estado en Reuniones, Tipos en Control de Reuniones).
+ * En escritorio es una columna fija; en móvil se oculta y se abre como panel deslizable con
+ * el botón .subnavToggle.
+ */
+.subnavToggle,
+.subnavClose {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .subnavToggle {
+    align-items: center;
+    align-self: flex-start;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+    color: #0f172a;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    gap: 8px;
+    max-width: 100%;
+    padding: 9px 12px;
+  }
+
+  .subnavToggle svg {
+    color: #1d4ed8;
+    flex-shrink: 0;
+  }
+
+  .subnavToggle span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .subnavToggle small {
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .subnavDrawer {
+    bottom: 0;
+    box-shadow: 0 0 40px rgba(2, 6, 23, 0.45);
+    display: flex !important;
+    height: 100dvh;
+    left: 0;
+    min-height: 0 !important;
+    position: fixed;
+    top: 0;
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    visibility: hidden;
+    width: min(270px, 80vw);
+    z-index: 85;
+  }
+
+  .subnavDrawer.isMobileOpen {
+    transform: none;
+    visibility: visible;
+  }
+
+  .subnavDrawer .subnavHeader {
+    justify-content: space-between;
+  }
+
+  .subnavClose {
+    align-items: center;
+    background: rgba(2, 6, 23, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    color: #e2e8f0;
+    cursor: pointer;
+    display: inline-flex;
+    height: 34px;
+    justify-content: center;
+    width: 34px;
+  }
+
+  .subnavBackdrop {
+    animation: dashboardFadeIn 0.2s ease-out;
+    background: rgba(15, 23, 42, 0.5);
+    inset: 0;
+    position: fixed;
+    z-index: 84;
   }
 }

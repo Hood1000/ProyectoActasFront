@@ -71,14 +71,6 @@
   color: #b91c1c;
 }
 
-.votingPollsCard {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
-}
-
 .votingHeader h2 {
   color: #0f172a;
   font-size: 1.75rem;

@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { IconListCheck, IconSearchOff, IconUpload, IconX } from "@tabler/icons-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { IconAdjustmentsHorizontal, IconChevronDown, IconListCheck, IconPresentation, IconSearchOff, IconX } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
+import { readSessionPreference, writeSessionPreference } from "../../../../utils/sessionPreference";
 import meetingsService from "../../../../api/services/meetingsService";
 import EmptyState from "../../../../components/EmptyState";
 import MeetingsFilters from "../../../../components/MeetingsFilters";
@@ -12,6 +14,7 @@ import { clampPage, paginate } from "../../../../components/Pagination/utils";
 import "./styles.css";
 
 const meetingTypes = ["Consejo de carrera", "SIP pedagógico", "Asambleas"];
+const TYPE_PREFERENCE_KEY = "controlReuniones:tipo";
 
 const modalityOptions = [
   { label: "Presencial", value: "PRESENCIAL" },
@@ -126,11 +129,15 @@ const currentDateTimeLocal = () => {
 
 const ControlActas = () => {
   const { user } = useAuth();
-  const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
   const [meetings, setMeetings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState(meetingTypes[0]);
+  // Recuerda el tipo elegido al ir a la sesión de una reunión y volver.
+  const [selectedType, setSelectedType] = useState(() =>
+    readSessionPreference(TYPE_PREFERENCE_KEY, meetingTypes, meetingTypes[0]),
+  );
+  const [isSubnavOpen, setIsSubnavOpen] = useState(false);
   const [listFilters, setListFilters] = useState(EMPTY_MEETING_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -150,9 +157,6 @@ const ControlActas = () => {
   const [pointDraft, setPointDraft] = useState(initialPointDraft);
   const [pointDraftError, setPointDraftError] = useState("");
 
-  const [actaFile, setActaFile] = useState(null);
-  const [isFinalizingMeeting, setIsFinalizingMeeting] = useState(false);
-  const [finalizeMsg, setFinalizeMsg] = useState({ text: "", type: "error" });
   const [isConfirmingConsolidate, setIsConfirmingConsolidate] = useState(false);
   const [isConsolidating, setIsConsolidating] = useState(false);
   const [consolidateMsg, setConsolidateMsg] = useState({ text: "", type: "error" });
@@ -207,10 +211,26 @@ const ControlActas = () => {
   const getCountByType = (type) =>
     searchedMeetings.filter((meeting) => resolveMeetingType(meeting) === type).length;
 
+  useEffect(() => {
+    writeSessionPreference(TYPE_PREFERENCE_KEY, selectedType);
+  }, [selectedType]);
+
   const selectType = (type) => {
     setSelectedType(type);
     setCurrentPage(1);
+    setIsSubnavOpen(false);
   };
+
+  // En móvil el submenú es un panel deslizable: Escape lo cierra.
+  useEffect(() => {
+    if (!isSubnavOpen) return undefined;
+    const handleKey = (event) => {
+      if (event.key === "Escape") setIsSubnavOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isSubnavOpen]);
+
 
   const handleListFilterChange = (key, value) => {
     setListFilters((prev) => ({ ...prev, [key]: value }));
@@ -228,11 +248,8 @@ const ControlActas = () => {
   };
 
   const resetFinalizeState = () => {
-    setActaFile(null);
-    setFinalizeMsg({ text: "", type: "error" });
     setIsConfirmingConsolidate(false);
     setConsolidateMsg({ text: "", type: "error" });
-    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const resetFormStep = () => {
@@ -383,29 +400,6 @@ const ControlActas = () => {
     }
   };
 
-  const handleFinalizeMeeting = async () => {
-    if (!actaFile || !detailMeetingId) return;
-    setIsFinalizingMeeting(true);
-    setFinalizeMsg({ text: "", type: "error" });
-
-    try {
-      await meetingsService.uploadEvidenceFile(detailMeetingId, actaFile);
-      await meetingsService.closeMeeting(detailMeetingId);
-      resetFinalizeState();
-      closeDetailPanel();
-      await hydrateData();
-    } catch (err) {
-      setFinalizeMsg({
-        text:
-          err?.response?.data?.message ||
-          "No se pudo finalizar la reunión. Intenta nuevamente.",
-        type: "error",
-      });
-    } finally {
-      setIsFinalizingMeeting(false);
-    }
-  };
-
   const handleSaveMeeting = async () => {
     setErrorMsg("");
 
@@ -480,9 +474,13 @@ const ControlActas = () => {
 
   return (
     <div className="controlActasContainer">
-      <aside className="secondarySidebar">
-        <div className="secondarySidebarHeader">
+      {isSubnavOpen && <div className="subnavBackdrop" onClick={() => setIsSubnavOpen(false)} />}
+      <aside className={`secondarySidebar subnavDrawer ${isSubnavOpen ? "isMobileOpen" : ""}`}>
+        <div className="secondarySidebarHeader subnavHeader">
           <h3>Tipos de Reuniones</h3>
+          <button aria-label="Cerrar tipos" className="subnavClose" onClick={() => setIsSubnavOpen(false)} type="button">
+            <IconX size={18} />
+          </button>
         </div>
 
         <ul className="actaTypesList">
@@ -510,6 +508,19 @@ const ControlActas = () => {
             </button>
           )}
         </header>
+
+        <button
+          aria-expanded={isSubnavOpen}
+          className="subnavToggle"
+          onClick={() => setIsSubnavOpen(true)}
+          type="button"
+        >
+          <IconAdjustmentsHorizontal size={18} />
+          <span>
+            <small>Tipo:</small> {selectedType} ({getCountByType(selectedType)})
+          </span>
+          <IconChevronDown size={16} />
+        </button>
 
         <MeetingsFilters
           filters={listFilters}
@@ -900,68 +911,25 @@ const ControlActas = () => {
                 </>
               )}
 
-              {/* Se puede finalizar mientras la reunión no esté cerrada ni cancelada (también en curso). */}
+              {/* La votación y el cierre (acta firmada) se gestionan en la vista de sesión. */}
               {canEditMeetings && canCancelMeeting(detailMeeting) && (
                 <>
                   <hr className="controlActasDivider" />
                   <div className="controlActasFinalizeSection">
                     <div className="controlActasFinalizeSectionHeader">
-                      <IconUpload size={18} />
-                      <h4>Finalizar esta reunion</h4>
+                      <IconPresentation size={18} />
+                      <h4>Sesión de la reunión</h4>
                     </div>
-
-                    {detailMeeting.evidenceSignaturesUrl ? (
-                      <p className="controlActasSuccess">
-                        El acta ya fue cargada al sistema. La reunion esta lista para cierre.
-                      </p>
-                    ) : (
-                      <>
-                        <p className="actaCardMeta">
-                          Sube el acta firmada, una hoja o una imagen con firmas de los participantes externos para cerrar el proceso (PDF, Word o imagen JPG/PNG/WebP, max. 15 MB). La confirmación de asistencia en el sistema sigue siendo solo para docentes y secretarios.
-                        </p>
-
-                        <label className="controlActasFileDropzone" htmlFor="acta-file-input">
-                          <IconUpload size={20} />
-                          <span>
-                            {actaFile ? actaFile.name : "Seleccionar acta, hoja o imagen"}
-                          </span>
-                          <input
-                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,image/*"
-                            id="acta-file-input"
-                            onChange={(e) => {
-                              setActaFile(e.target.files[0] || null);
-                              setFinalizeMsg({ text: "", type: "error" });
-                            }}
-                            ref={fileInputRef}
-                            style={{ display: "none" }}
-                            type="file"
-                          />
-                        </label>
-
-                        {actaFile && (
-                          <button
-                            className="controlActasFinalizeBtn"
-                            disabled={isFinalizingMeeting}
-                            onClick={handleFinalizeMeeting}
-                            type="button"
-                          >
-                            {isFinalizingMeeting ? "Finalizando reunión..." : "Subir Acta y Finalizar Reunion"}
-                          </button>
-                        )}
-                      </>
-                    )}
-
-                    {finalizeMsg.text && (
-                      <p
-                        className={
-                          finalizeMsg.type === "success"
-                            ? "controlActasSuccess"
-                            : "controlActasError"
-                        }
-                      >
-                        {finalizeMsg.text}
-                      </p>
-                    )}
+                    <p className="actaCardMeta">
+                      Desde la sesión se modera el chat, se inicia la votación y se finaliza la reunión cargando el acta firmada.
+                    </p>
+                    <button
+                      className="controlActasFinalizeBtn"
+                      onClick={() => navigate(`/dashboard/reuniones/${detailMeeting.id}/sesion`)}
+                      type="button"
+                    >
+                      Ir a la sesión
+                    </button>
                   </div>
                 </>
               )}

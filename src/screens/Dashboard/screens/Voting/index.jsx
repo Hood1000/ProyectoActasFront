@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { IconGavel, IconRefresh } from "@tabler/icons-react";
+import { IconGavel, IconPresentation, IconRefresh } from "@tabler/icons-react";
 import { useAuth } from "../../../../context/AuthContext";
 import meetingsService from "../../../../api/services/meetingsService";
-import MeetingPolls from "../../../../components/MeetingPolls";
 import "./styles.css";
 
 const formatDate = (value) =>
@@ -155,8 +154,12 @@ const Voting = () => {
               </div>
             </div>
 
-            {activeMeeting.hasQuorum ? (
-              <div className="votingQuorumOk">Quórum alcanzado. Las votaciones están habilitadas.</div>
+            {activeMeeting.votingOpen ? (
+              <div className="votingQuorumOk">La fase de votación está abierta.</div>
+            ) : activeMeeting.hasQuorum ? (
+              <div className="votingQuorumOk">
+                Quórum alcanzado. Secretaría iniciará la votación desde la sesión.
+              </div>
             ) : (
               <div className="votingQuorumWarning">
                 Sin quórum: se requiere {activeMeeting.quorumFormula?.toLowerCase() || "el mínimo de asistentes"}.
@@ -164,9 +167,13 @@ const Voting = () => {
             )}
           </div>
 
-          <div className="votingPollsCard">
-            <MeetingPolls key={activeMeeting.id} meeting={activeMeeting} user={user} />
-          </div>
+          <button
+            className="votingPrimaryBtn"
+            onClick={() => navigate(`/dashboard/reuniones/${activeMeeting.id}/sesion`)}
+            type="button"
+          >
+            <IconPresentation size={18} /> Ir a la sesión para votar
+          </button>
         </>
       )}
     </section>

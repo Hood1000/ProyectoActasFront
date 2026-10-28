@@ -8,6 +8,11 @@ const list = async () => {
   return resp.data || [];
 };
 
+const getById = async (meetingId) => {
+  const resp = await axiosClient.get(`/meetings/${meetingId}`);
+  return resp.data;
+};
+
 const create = async (payload) => {
   const resp = await axiosClient.post("/meetings", payload);
   return resp.data || resp;
@@ -55,6 +60,16 @@ const uploadEvidenceFile = async (meetingId, file) => {
     formData,
     { headers: { Authorization: `Bearer ${token}` } },
   );
+  return resp.data || resp;
+};
+
+const getEvidenceUrl = async (meetingId) => {
+  const resp = await axiosClient.get(`/meetings/${meetingId}/evidence/url`);
+  return resp.data;
+};
+
+const startVoting = async (meetingId) => {
+  const resp = await axiosClient.post(`/meetings/${meetingId}/voting/start`);
   return resp.data || resp;
 };
 
@@ -160,6 +175,8 @@ export default {
   dismissNotification,
   finalizeAttendance,
   getAvailableAgenda,
+  getById,
+  getEvidenceUrl,
   listAbsenceAlerts,
   listAnnualArchives,
   listMeetingChatMessages,
@@ -173,6 +190,7 @@ export default {
   proposePoint,
   reviewAbsenceAlert,
   reviewPoint,
+  startVoting,
   update,
   uploadEvidenceFile,
   voteMeetingPoll,

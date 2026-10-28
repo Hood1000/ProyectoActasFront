@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   IconChevronDown,
   IconChevronUp,
@@ -12,6 +12,7 @@ import {
 } from "@tabler/icons-react";
 import meetingsService from "../../api/services/meetingsService";
 import useMeetingPollsSocket from "../../hooks/useMeetingPollsSocket";
+import { getVoteState, sortPolls, upsertPoll } from "./utils";
 import { getAvatarColor, getInitials } from "../../utils/people";
 import "./styles.css";
 
@@ -35,14 +36,6 @@ const formatTime = (value) =>
       })
     : "";
 
-const sortPolls = (list) =>
-  [...list].sort((a, b) => {
-    if (a.status !== b.status) return a.status === "OPEN" ? -1 : 1;
-    return new Date(b.createdAt) - new Date(a.createdAt);
-  });
-
-const upsertPoll = (list, poll) => sortPolls([...list.filter((item) => item.id !== poll.id), poll]);
-
 const getVerdict = ({ aFavor = 0, enContra = 0, total = 0 }) => {
   if (total === 0) return { label: "Sin votos", tone: "neutral" };
   if (aFavor > enContra) return { label: "Aprobada", tone: "ok" };
@@ -50,7 +43,16 @@ const getVerdict = ({ aFavor = 0, enContra = 0, total = 0 }) => {
   return { label: "Empate", tone: "neutral" };
 };
 
-const PollCard = ({ canVote, isManager, meetingId, onPollChange, poll, presentCount, userId }) => {
+export const PollCard = ({
+  canVote,
+  isManager,
+  meetingId,
+  onPollChange,
+  poll,
+  presentCount,
+  userId,
+  voteBlockReason = "",
+}) => {
   const [isVoting, setIsVoting] = useState("");
   const [isClosing, setIsClosing] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
@@ -89,7 +91,7 @@ const PollCard = ({ canVote, isManager, meetingId, onPollChange, poll, presentCo
   };
 
   return (
-    <article className={`mpollCard ${isOpen ? "mpollCard--open" : ""}`}>
+    <article className={`mpollCard ${isOpen ? "mpollCard--open" : ""}`} id={`poll-${poll.id}`}>
       <header className="mpollCardHeader">
         <span className={`mpollState ${isOpen ? "mpollState--open" : ""}`}>
           {isOpen ? (
@@ -129,6 +131,11 @@ const PollCard = ({ canVote, isManager, meetingId, onPollChange, poll, presentCo
             </button>
           ))}
         </div>
+      )}
+      {isOpen && !canVote && voteBlockReason && (
+        <p className="mpollMyVote">
+          <IconInfoCircle size={14} /> {voteBlockReason}
+        </p>
       )}
       {isOpen && canVote && (
         <p className="mpollMyVote">
@@ -219,8 +226,12 @@ const PollCard = ({ canVote, isManager, meetingId, onPollChange, poll, presentCo
   );
 };
 
-/** Votaciones de una reunión con resultados en vivo. */
-const MeetingPolls = ({ meeting, user }) => {
+/**
+ * Votaciones de una reunión con resultados en vivo. allowCreate=false oculta el formulario
+ * para crear preguntas (la vista de sesión lo ofrece en su propia ventana). onPollsChange
+ * recibe la lista cada vez que cambia, para mostrar contadores fuera del componente.
+ */
+const MeetingPolls = ({ meeting, user, allowCreate = true, onPollsChange }) => {
   const [polls, setPolls] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -231,30 +242,17 @@ const MeetingPolls = ({ meeting, user }) => {
 
   const meetingId = meeting?.id;
   const isManager = MANAGER_ROLES.includes(user?.role || "");
-  const isRunning = meeting?.status === "EN_CURSO" && !meeting?.isClosed;
-  const attendance = meeting?.attendance || [];
-  const myEntry = attendance.find((entry) => entry.userId === user?.id);
-  const needsPresence = attendance.length > 0;
-  const canVote = isRunning && (!needsPresence || myEntry?.status === "PRESENTE");
-
-  const voteBlockReason = useMemo(() => {
-    if (!isRunning) {
-      return meeting?.status === "PROGRAMADA"
-        ? "Las votaciones se habilitan cuando la reunión esté en curso."
-        : "La reunión ya no está en curso: solo puedes consultar los resultados.";
-    }
-    if (needsPresence && !myEntry) return "No estás convocado a esta reunión: puedes ver los resultados, pero no votar.";
-    if (needsPresence && myEntry?.status !== "PRESENTE") {
-      return "Para votar tu asistencia debe estar registrada como presente.";
-    }
-    return "";
-  }, [isRunning, meeting?.status, needsPresence, myEntry]);
+  const canCreateHere = isManager && allowCreate;
+  const votingOpen = Boolean(meeting?.votingOpen);
+  const { canVote, isRunning, reason: voteBlockReason } = getVoteState(meeting, user);
 
   const createBlockReason = !isRunning
     ? "Solo se pueden abrir votaciones con la reunión en curso."
-    : !meeting?.hasQuorum
-      ? `La reunión aún no tiene quórum (${meeting?.quorumFormula || "mínimo requerido"}).`
-      : "";
+    : !votingOpen
+      ? "Inicia la fase de votación para abrir preguntas."
+      : !meeting?.hasQuorum
+        ? `La reunión aún no tiene quórum (${meeting?.quorumFormula || "mínimo requerido"}).`
+        : "";
 
   const loadPolls = useCallback(async () => {
     if (!meetingId) return;
@@ -280,6 +278,10 @@ const MeetingPolls = ({ meeting, user }) => {
   }, []);
 
   useMeetingPollsSocket(meetingId, handlePollChange, loadPolls);
+
+  useEffect(() => {
+    onPollsChange?.(polls);
+  }, [polls, onPollsChange]);
 
   const handleCreate = async (event) => {
     event.preventDefault();
@@ -314,7 +316,7 @@ const MeetingPolls = ({ meeting, user }) => {
               : `${openCount} abierta${openCount === 1 ? "" : "s"} · ${polls.length} en total`}
           </span>
         </div>
-        {isManager && !showForm && (
+        {canCreateHere && !showForm && (
           <button
             className="mpollBtn mpollBtn--primary"
             disabled={Boolean(createBlockReason)}
@@ -327,13 +329,13 @@ const MeetingPolls = ({ meeting, user }) => {
         )}
       </div>
 
-      {isManager && createBlockReason && (
+      {canCreateHere && createBlockReason && (
         <p className="mpollNotice">
           <IconInfoCircle size={16} /> {createBlockReason}
         </p>
       )}
 
-      {isManager && showForm && (
+      {canCreateHere && showForm && (
         <form className="mpollForm" onSubmit={handleCreate}>
           <label htmlFor={`poll-question-${meetingId}`}>Pregunta a votar</label>
           <textarea
@@ -367,7 +369,7 @@ const MeetingPolls = ({ meeting, user }) => {
         </form>
       )}
 
-      {!isManager && voteBlockReason && polls.some((poll) => poll.status === "OPEN") && (
+      {!isManager && voteBlockReason && (isRunning || polls.some((poll) => poll.status === "OPEN")) && (
         <p className="mpollNotice">
           <IconInfoCircle size={16} /> {voteBlockReason}
         </p>
@@ -389,7 +391,7 @@ const MeetingPolls = ({ meeting, user }) => {
             <strong>No hay votaciones todavía</strong>
             <p>
               {isManager
-                ? "Abre una votación cuando la reunión esté en curso y tenga quórum."
+                ? "Abre una votación una vez iniciada la fase de votación."
                 : "Cuando Secretaría abra una votación aparecerá aquí al instante."}
             </p>
           </div>

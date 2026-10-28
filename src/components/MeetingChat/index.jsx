@@ -46,6 +46,8 @@ const mergeChatMessages = (current, incoming) => {
   );
 };
 
+const EMPTY_ITEMS = [];
+
 const isSameGroup = (a, b) =>
   Boolean(a && b) &&
   a.author?.id === b.author?.id &&
@@ -68,8 +70,20 @@ const Avatar = ({ author }) => {
 /**
  * Chat en vivo de una reunión. isActive indica si la pestaña está visible: mientras no lo
  * está, los mensajes ajenos se cuentan como no leídos y se informan con onUnreadChange.
+ * timelineItems ({ id, createdAt, content }) se intercalan con los mensajes por fecha (p. ej.
+ * las votaciones) y composerActions se muestra junto al campo de texto. renderHeader(isConnected)
+ * reemplaza la cabecera por defecto y banner se fija entre la cabecera y los mensajes.
  */
-const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
+const MeetingChat = ({
+  meeting,
+  user,
+  isActive = true,
+  onUnreadChange,
+  timelineItems = EMPTY_ITEMS,
+  composerActions = null,
+  renderHeader,
+  banner = null,
+}) => {
   const socket = useSocket();
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
@@ -79,6 +93,7 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
   const [isConnected, setIsConnected] = useState(Boolean(socket?.connected));
   const [hasNewBelow, setHasNewBelow] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [lockedByServer, setLockedByServer] = useState(false);
 
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
@@ -88,8 +103,11 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
   const messagesRef = useRef([]);
 
   const meetingId = meeting?.id;
+  const isCancelled = meeting?.status === "CANCELADA";
+  // lockedByServer cubre el caso en que la reunión se cerró antes de que llegara el aviso
+  // por socket: el backend rechaza el envío y el chat pasa a solo lectura igual.
   const isReadOnly =
-    Boolean(meeting?.isClosed) || ["CANCELADA", "FINALIZADA"].includes(meeting?.status);
+    lockedByServer || Boolean(meeting?.isClosed) || ["CANCELADA", "FINALIZADA"].includes(meeting?.status);
   const canPost = CHAT_ROLES.includes(user?.role || "") && !isReadOnly;
 
   useEffect(() => {
@@ -122,6 +140,7 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
     setMessages([]);
     setError("");
     setUnread(0);
+    setLockedByServer(false);
     setIsLoading(true);
     forceScrollRef.current = true;
 
@@ -185,7 +204,7 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
       scrollToBottom(forceScrollRef.current ? "auto" : "smooth");
       forceScrollRef.current = false;
     }
-  }, [messages, isActive, isLoading]);
+  }, [messages, timelineItems.length, isActive, isLoading]);
 
   const handleScroll = () => {
     const node = scrollRef.current;
@@ -216,6 +235,7 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
       setMessages((prev) => mergeChatMessages(prev, [created]));
       setDraft("");
     } catch (err) {
+      if ([403, 409].includes(err?.response?.status)) setLockedByServer(true);
       setError(err?.response?.data?.message || "No se pudo enviar el mensaje.");
     } finally {
       setIsSending(false);
@@ -235,20 +255,24 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
     }
   };
 
-  const items = useMemo(
-    () =>
-      messages.map((message, index) => {
-        const prev = messages[index - 1];
-        const next = messages[index + 1];
-        return {
-          isGroupEnd: !isSameGroup(message, next),
-          isGroupStart: !isSameGroup(prev, message),
-          isNewDay: !prev || dayKey(prev.createdAt) !== dayKey(message.createdAt),
-          message,
-        };
-      }),
-    [messages],
-  );
+  const items = useMemo(() => {
+    const timeline = [
+      ...messages.map((message) => ({ createdAt: message.createdAt, key: `m-${message.id}`, message })),
+      ...timelineItems.map((item) => ({ content: item.content, createdAt: item.createdAt, key: `x-${item.id}` })),
+    ].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    // Los mensajes solo se agrupan con mensajes contiguos; un elemento intercalado corta el grupo.
+    return timeline.map((entry, index) => {
+      const prev = timeline[index - 1];
+      const next = timeline[index + 1];
+      return {
+        ...entry,
+        isGroupEnd: !isSameGroup(entry.message, next?.message),
+        isGroupStart: !isSameGroup(prev?.message, entry.message),
+        isNewDay: !prev || dayKey(prev.createdAt) !== dayKey(entry.createdAt),
+      };
+    });
+  }, [messages, timelineItems]);
 
   const participants = useMemo(
     () => new Set(messages.map((message) => message.author?.id).filter(Boolean)).size,
@@ -257,19 +281,24 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
 
   return (
     <div className="mchat">
-      <div className="mchatHeader">
-        <div className="mchatHeaderInfo">
-          <span className="mchatHeaderTitle">Conversación de la reunión</span>
-          <span className="mchatHeaderMeta">
-            {messages.length} {messages.length === 1 ? "mensaje" : "mensajes"} · {participants}{" "}
-            {participants === 1 ? "participante" : "participantes"}
+      {renderHeader ? (
+        renderHeader(isConnected)
+      ) : (
+        <div className="mchatHeader">
+          <div className="mchatHeaderInfo">
+            <span className="mchatHeaderTitle">Conversación de la reunión</span>
+            <span className="mchatHeaderMeta">
+              {messages.length} {messages.length === 1 ? "mensaje" : "mensajes"} · {participants}{" "}
+              {participants === 1 ? "participante" : "participantes"}
+            </span>
+          </div>
+          <span className={`mchatStatus ${isConnected ? "mchatStatus--live" : ""}`}>
+            <span className="mchatStatusDot" />
+            {isConnected ? "En vivo" : "Reconectando…"}
           </span>
         </div>
-        <span className={`mchatStatus ${isConnected ? "mchatStatus--live" : ""}`}>
-          <span className="mchatStatusDot" />
-          {isConnected ? "En vivo" : "Reconectando…"}
-        </span>
-      </div>
+      )}
+      {banner}
 
       <div className="mchatScroll" onScroll={handleScroll} ref={scrollRef}>
         {isLoading ? (
@@ -278,7 +307,7 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
             <span className="mchatSkeletonBubble mchatSkeletonBubble--own" />
             <span className="mchatSkeletonBubble mchatSkeletonBubble--short" />
           </div>
-        ) : messages.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="mchatEmpty">
             <span className="mchatEmptyIcon">
               <IconMessages size={28} />
@@ -292,15 +321,24 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
           </div>
         ) : (
           <ol className="mchatList">
-            {items.map(({ isGroupEnd, isGroupStart, isNewDay, message }) => {
+            {items.map(({ content, createdAt, isGroupEnd, isGroupStart, isNewDay, key, message }) => {
+              const dayDivider = isNewDay && (
+                <li className="mchatDay">
+                  <span>{formatDayLabel(createdAt)}</span>
+                </li>
+              );
+              if (!message) {
+                return (
+                  <React.Fragment key={key}>
+                    {dayDivider}
+                    <li className="mchatEmbed">{content}</li>
+                  </React.Fragment>
+                );
+              }
               const isOwn = message?.author?.id === user?.id;
               return (
-                <React.Fragment key={message.id}>
-                  {isNewDay && (
-                    <li className="mchatDay">
-                      <span>{formatDayLabel(message.createdAt)}</span>
-                    </li>
-                  )}
+                <React.Fragment key={key}>
+                  {dayDivider}
                   <li
                     className={[
                       "mchatRow",
@@ -353,6 +391,7 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
 
       {canPost ? (
         <form className="mchatComposer" onSubmit={handleSubmit}>
+          {composerActions}
           <div className="mchatInputWrap">
             <textarea
               aria-label="Escribe un mensaje"
@@ -382,9 +421,11 @@ const MeetingChat = ({ meeting, user, isActive = true, onUnreadChange }) => {
       ) : (
         <div className="mchatReadOnly">
           <IconLock size={16} />
-          {isReadOnly
-            ? "Esta reunión ya terminó: el chat queda como registro de solo lectura."
-            : "Tu rol no puede escribir en este chat."}
+          {!isReadOnly
+            ? "Tu rol no puede escribir en este chat."
+            : isCancelled
+              ? "Esta reunión fue cancelada: el chat queda como registro de solo lectura."
+              : "Esta reunión ya terminó: el chat queda como registro de solo lectura."}
         </div>
       )}
       {canPost && <p className="mchatHint">Enter para enviar · Shift + Enter para nueva línea</p>}
