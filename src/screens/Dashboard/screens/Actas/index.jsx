@@ -16,15 +16,15 @@ import { readSessionPreference, writeSessionPreference } from "../../../../utils
 import "./styles.css";
 
 const STATUS_TABS = [
-  { label: "En proceso", value: "PROGRAMADA" },
-  { label: "Activa", value: "EN_CURSO" },
-  { label: "Cancelada", value: "CANCELADA" },
-  { label: "Finalizada", value: "FINALIZADA" },
+  { label: "En proceso", value: "EN_PROCESO", statuses: ["PROGRAMADA", "EN_CURSO"] },
+  { label: "Finalizada", value: "FINALIZADA", statuses: ["FINALIZADA"] },
+  { label: "Cancelada", value: "CANCELADA", statuses: ["CANCELADA"] },
 ];
 
+// Etiqueta por estado real de la reunión (badge de cada tarjeta).
 const STATUS_LABELS = {
-  PROGRAMADA: "En proceso",
-  EN_CURSO: "Activa",
+  PROGRAMADA: "Programada",
+  EN_CURSO: "En curso",
   CANCELADA: "Cancelada",
   FINALIZADA: "Finalizada",
 };
@@ -32,6 +32,14 @@ const STATUS_LABELS = {
 const EMPTY_POINT_FORM = { description: "", title: "" };
 const STATUS_PREFERENCE_KEY = "reuniones:estado";
 const STATUS_VALUES = STATUS_TABS.map((tab) => tab.value);
+const DEFAULT_STATUS_TAB = STATUS_TABS[0].value;
+
+const findStatusTab = (value) =>
+  STATUS_TABS.find((tab) => tab.value === value) || STATUS_TABS[0];
+
+// Pestaña que agrupa un estado real, para ubicar una reunión al abrirla desde un enlace.
+const tabValueForStatus = (status) =>
+  (STATUS_TABS.find((tab) => tab.statuses.includes(status)) || STATUS_TABS[0]).value;
 
 const formatDate = (value) => {
   if (!value) return "Sin fecha";
@@ -74,7 +82,7 @@ const Actas = () => {
   const [meetings, setMeetings] = useState([]);
   // Recuerda la pestaña de estado al ir a la sesión de una reunión y volver.
   const [selectedStatus, setSelectedStatus] = useState(() =>
-    readSessionPreference(STATUS_PREFERENCE_KEY, STATUS_VALUES, "PROGRAMADA"),
+    readSessionPreference(STATUS_PREFERENCE_KEY, STATUS_VALUES, DEFAULT_STATUS_TAB),
   );
   const [isSubnavOpen, setIsSubnavOpen] = useState(false);
   const [listFilters, setListFilters] = useState(EMPTY_MEETING_FILTERS);
@@ -112,9 +120,11 @@ const Actas = () => {
     [meetings, listFilters],
   );
 
+  const activeStatusTab = findStatusTab(selectedStatus);
+
   const filteredMeetings = useMemo(
-    () => searchedMeetings.filter((m) => m.status === selectedStatus),
-    [searchedMeetings, selectedStatus],
+    () => searchedMeetings.filter((m) => activeStatusTab.statuses.includes(m.status)),
+    [searchedMeetings, activeStatusTab],
   );
 
   const visiblePage = clampPage(currentPage, filteredMeetings.length, pageSize);
@@ -124,8 +134,10 @@ const Actas = () => {
     [filteredMeetings, pageSize, visiblePage],
   );
 
-  const getCountByStatus = (status) =>
-    searchedMeetings.filter((m) => m.status === status).length;
+  const getCountByTab = (tabValue) => {
+    const tab = findStatusTab(tabValue);
+    return searchedMeetings.filter((m) => tab.statuses.includes(m.status)).length;
+  };
 
   useEffect(() => {
     writeSessionPreference(STATUS_PREFERENCE_KEY, selectedStatus);
@@ -202,10 +214,8 @@ const Actas = () => {
     if (!targetMeeting) return;
     handledQueryMeetingRef.current = meetingIdFromQuery;
     // La lista se ubica en el estado de la reunión abierta, para que su tarjeta esté a la vista.
-    if (STATUS_VALUES.includes(targetMeeting.status)) {
-      setSelectedStatus(targetMeeting.status);
-      setCurrentPage(1);
-    }
+    setSelectedStatus(tabValueForStatus(targetMeeting.status));
+    setCurrentPage(1);
     if (targetMeeting.id !== detailMeetingId) {
       setDetailMeetingId(targetMeeting.id);
       setAttendanceMsg("");
@@ -365,7 +375,7 @@ const Actas = () => {
                 type="button"
               >
                 <span>{tab.label}</span>
-                <span className="reunionesBadge">{getCountByStatus(tab.value)}</span>
+                <span className="reunionesBadge">{getCountByTab(tab.value)}</span>
               </button>
             </li>
           ))}
@@ -377,7 +387,7 @@ const Actas = () => {
           <div>
             <h2>Reuniones</h2>
             <p>
-              {STATUS_LABELS[selectedStatus]} — {filteredMeetings.length}{" "}
+              {activeStatusTab.label} — {filteredMeetings.length}{" "}
               {filteredMeetings.length === 1 ? "reunión" : "reuniones"}
             </p>
           </div>
@@ -391,7 +401,7 @@ const Actas = () => {
         >
           <IconAdjustmentsHorizontal size={18} />
           <span>
-            <small>Estado:</small> {STATUS_LABELS[selectedStatus]} ({getCountByStatus(selectedStatus)})
+            <small>Estado:</small> {activeStatusTab.label} ({getCountByTab(selectedStatus)})
           </span>
           <IconChevronDown size={16} />
         </button>
@@ -419,7 +429,7 @@ const Actas = () => {
 
         {!isLoading && filteredMeetings.length === 0 && !hasActiveFilters(listFilters) && (
           <div className="reunionesEmpty">
-            No hay reuniones en estado "{STATUS_LABELS[selectedStatus]}".
+            No hay reuniones en estado "{activeStatusTab.label}".
           </div>
         )}
 
