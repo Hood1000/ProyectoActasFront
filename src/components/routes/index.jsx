@@ -13,6 +13,7 @@ import Voting from "../../screens/Dashboard/screens/Voting";
 import Sanctions from "../../screens/Dashboard/screens/Sanctions";
 import Actas from "../../screens/Dashboard/screens/Actas";
 import MeetingSession from "../../screens/Dashboard/screens/MeetingSession";
+import AnnualReport from "../../screens/Dashboard/screens/AnnualReport";
 
 const RequireAuth = ({ children }) => {
   const { token, loading } = useAuth();
@@ -97,6 +98,16 @@ const ContenRoutes = () => {
           <Route path="reuniones/:id/sesion" element={<MeetingSession />} />
           <Route path="actas" element={<Actas />} />
         </Route>
+        <Route
+          path="/annual-report/:year"
+          element={
+            <RequireAuth>
+              <RequireRole allowedRoles={["ADMIN"]}>
+                <AnnualReport />
+              </RequireRole>
+            </RequireAuth>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

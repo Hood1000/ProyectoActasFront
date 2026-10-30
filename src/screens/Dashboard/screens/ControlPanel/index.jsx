@@ -1,8 +1,9 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
 import { useNotifications } from "../../../../context/NotificationsContext";
 import meetingsService from "../../../../api/services/meetingsService";
+import { downloadBlob } from "../../../../utils/download";
 import {
   IconChecklist,
   IconDownload,
@@ -189,6 +190,17 @@ const ControlPanel = () => {
     }
   };
 
+  const handleDownloadAnnualPdf = async (year) => {
+    setAnnualMsg("Generando PDF...");
+    try {
+      const blob = await meetingsService.downloadAnnualReportPdf(year);
+      downloadBlob(blob, `Cierre-anual-${year}.pdf`);
+      setAnnualMsg("");
+    } catch {
+      setAnnualMsg("No se pudo generar el PDF del cierre anual.");
+    }
+  };
+
   return (
     <div className="contenDashboard">
       <header className="cp-header">
@@ -251,15 +263,18 @@ const ControlPanel = () => {
                       <p className="cp-cardText">{item.meetingsCount} reuniones consolidadas.</p>
                     </div>
                     <div className="cp-annualLinks">
-                      <a
-                        className="cp-annualDownload"
-                        href={`${import.meta.env.VITE_API_URL || "http://localhost:5000"}${item.reportUrl || item.fileUrl}`}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
+                      <Link className="cp-annualDownload" to={`/annual-report/${item.year}`}>
                         <IconEye size={16} />
                         Ver reporte
-                      </a>
+                      </Link>
+                      <button
+                        className="cp-annualDownload"
+                        onClick={() => handleDownloadAnnualPdf(item.year)}
+                        type="button"
+                      >
+                        <IconFileText size={16} />
+                        Descargar PDF
+                      </button>
                       <a
                         className="cp-annualDownload"
                         href={`${import.meta.env.VITE_API_URL || "http://localhost:5000"}${item.backupUrl || item.fileUrl}`}

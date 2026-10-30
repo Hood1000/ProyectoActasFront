@@ -302,11 +302,16 @@ const Actas = () => {
     }
   };
 
-  const handleReviewPoint = async (pointId, status) => {
+  const [rejectingPointId, setRejectingPointId] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+
+  const handleReviewPoint = async (pointId, status, reviewComment) => {
     if (!detailMeeting?.id || !canReview) return;
     setIsSubmitting(true);
     try {
-      await meetingsService.reviewPoint(detailMeeting.id, pointId, { status });
+      await meetingsService.reviewPoint(detailMeeting.id, pointId, { status, reviewComment });
+      setRejectingPointId(null);
+      setRejectReason("");
       await loadMeetings();
     } catch (err) {
       setAttendanceMsg(
@@ -346,6 +351,11 @@ const Actas = () => {
       (p) => p.status === "PENDIENTE" && p.proposerId !== user?.id,
     );
   }, [detailMeeting, user?.id]);
+
+  const detailRejectedPoints = useMemo(() => {
+    if (!detailMeeting?.agendaPoints) return [];
+    return detailMeeting.agendaPoints.filter((p) => p.status === "RECHAZADO");
+  }, [detailMeeting]);
 
   const getAttendanceStateForUser = (meeting, userId) => {
     if (!meeting?.attendance) return { isConfirmed: false, isInvited: false };
@@ -475,6 +485,19 @@ const Actas = () => {
                         type="button"
                       >
                         Agregar punto
+                      </button>
+                    )}
+                    {meeting.evidenceSignaturesUrl && (
+                      <button
+                        className="reunionBtn reunionBtn--secondary"
+                        onClick={() =>
+                          openMeetingEvidence(meeting.id).catch(() =>
+                            setPageMessage("No se pudo abrir el acta firmada."),
+                          )
+                        }
+                        type="button"
+                      >
+                        <IconFileText size={16} /> Ver acta
                       </button>
                     )}
                     <button
@@ -630,22 +653,79 @@ const Actas = () => {
                         <span className="reunionesPointAuthor">
                           {point.proposer?.name || "Sin autor"}
                         </span>
-                        <div className="reunionesReviewActions">
-                          <button
-                            disabled={isSubmitting}
-                            onClick={() => handleReviewPoint(point.id, "RECHAZADO")}
-                            type="button"
-                          >
-                            Rechazar
-                          </button>
-                          <button
-                            disabled={isSubmitting}
-                            onClick={() => handleReviewPoint(point.id, "APROBADO")}
-                            type="button"
-                          >
-                            Aprobar
-                          </button>
-                        </div>
+                        {rejectingPointId === point.id ? (
+                          <div className="reunionesRejectForm">
+                            <textarea
+                              className="reunionesRejectReason"
+                              onChange={(event) => setRejectReason(event.target.value)}
+                              placeholder="Motivo del rechazo (obligatorio)"
+                              rows={3}
+                              value={rejectReason}
+                            />
+                            <div className="reunionesReviewActions">
+                              <button
+                                disabled={isSubmitting}
+                                onClick={() => {
+                                  setRejectingPointId(null);
+                                  setRejectReason("");
+                                }}
+                                type="button"
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                disabled={isSubmitting || !rejectReason.trim()}
+                                onClick={() => handleReviewPoint(point.id, "RECHAZADO", rejectReason)}
+                                type="button"
+                              >
+                                Confirmar rechazo
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="reunionesReviewActions">
+                            <button
+                              disabled={isSubmitting}
+                              onClick={() => {
+                                setAttendanceMsg("");
+                                setRejectReason("");
+                                setRejectingPointId(point.id);
+                              }}
+                              type="button"
+                            >
+                              Rechazar
+                            </button>
+                            <button
+                              disabled={isSubmitting}
+                              onClick={() => handleReviewPoint(point.id, "APROBADO")}
+                              type="button"
+                            >
+                              Aprobar
+                            </button>
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {detailRejectedPoints.length > 0 && (
+                <section className="reunionesSection">
+                  <h4 className="reunionesSectionTitle">Puntos rechazados</h4>
+                  <ul className="reunionesPointsList">
+                    {detailRejectedPoints.map((point) => (
+                      <li key={point.id} className="reunionesPointItem">
+                        <strong>{point.title}</strong>
+                        <p>{point.description}</p>
+                        {point.reviewComment && (
+                          <p className="reunionesRejectMotivo">
+                            Motivo del rechazo: {point.reviewComment}
+                          </p>
+                        )}
+                        <span className="reunionesPointAuthor">
+                          {point.proposer?.name || "Sin autor"}
+                        </span>
                       </li>
                     ))}
                   </ul>

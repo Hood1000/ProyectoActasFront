@@ -183,6 +183,56 @@
   margin: 8px 0 0;
 }
 
+.agendaSelector select {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.agendaSelector select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.agendaListMeeting {
+  color: #64748b;
+  display: block;
+  font-size: 0.82rem;
+  margin-top: 4px;
+}
+
+.agendaPointHeader .agendaBadge {
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 10px;
+}
+
+.agendaPointHeader .agendaBadge--pendiente {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.agendaPointHeader .agendaBadge--aprobado {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.agendaPointHeader .agendaBadge--rechazado {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.agendaRejectReason {
+  background: #fef2f2;
+  border-radius: 8px;
+  color: #991b1b;
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+  padding: 6px 10px;
+}
+
 @media (max-width: 760px) {
   .agendaHeader {
     align-items: flex-start;

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Filtro de sombra suave para la tipografía -->
+    <filter id="drop-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="#880000" flood-opacity="0.5" />
+    </filter>
+
+    <!-- Ruta circular para el texto superior -->
+    <path id="text-path-top" d="M 65,250 A 185,185 0 1,1 435,250" fill="none" />
+    
+    <!-- Ruta circular para el texto inferior -->
+    <path id="text-path-bottom" d="M 85,250 A 165,165 0 0,0 415,250" fill="none" />
+  </defs>
+
+  <!-- Anillo exterior blanco con borde doble -->
+  <circle cx="250" cy="250" r="235" fill="#FFFFFF" stroke="#D0D5DD" stroke-width="4" />
+  <circle cx="250" cy="250" r="225" fill="none" stroke="#E5E7EB" stroke-width="2" />
+
+  <!-- Texto curvo superior -->
+  <text font-family="&#39;Arial Black&#39;, &#39;Helvetica Neue&#39;, Arial, sans-serif" font-weight="900" font-size="24.5" fill="#CC0000" filter="url(#drop-shadow)" letter-spacing="1">
+    <textPath href="#text-path-top" startOffset="50%" text-anchor="middle">
+      UNIVERSIDAD POLITÉCNICA TERRITORIAL
+    </textPath>
+  </text>
+
+  <!-- Sol central (Círculo Amarillo) -->
+  <circle cx="250" cy="235" r="95" fill="#FFE600" />
+
+  <!-- Pirámide de franjas rojas horizontales -->
+  <g fill="#CC0000">
+    <rect x="150" y="325" width="200" height="11" rx="2" />
+    <rect x="162" y="309" width="176" height="11" rx="2" />
+    <rect x="174" y="293" width="152" height="11" rx="2" />
+    <rect x="186" y="277" width="128" height="11" rx="2" />
+    <rect x="198" y="261" width="104" height="11" rx="2" />
+    <rect x="210" y="245" width="80" height="11" rx="2" />
+    <rect x="222" y="229" width="56" height="11" rx="2" />
+    <rect x="234" y="213" width="32" height="11" rx="2" />
+  </g>
+
+  <!-- Palma / Estrella central (Azul) -->
+  <g fill="#000099">
+    <!-- Tronco central -->
+    <rect x="244" y="145" width="12" height="195" rx="2" />
+    
+    <!-- Destellos / Hojas -->
+    <polygon points="250,90 245,145 255,145" />
+    <polygon points="250,145 205,105 245,148" />
+    <polygon points="250,145 295,105 255,148" />
+    <polygon points="250,145 175,140 245,150" />
+    <polygon points="250,145 325,140 255,150" />
+    <polygon points="250,145 185,180 246,154" />
+    <polygon points="250,145 315,180 254,154" />
+    <polygon points="250,145 210,215 247,156" />
+    <polygon points="250,145 290,215 253,156" />
+  </g>
+
+  <!-- Texto curvo inferior -->
+  <text font-family="&#39;Arial Black&#39;, &#39;Helvetica Neue&#39;, Arial, sans-serif" font-weight="900" font-size="28" fill="#CC0000" filter="url(#drop-shadow)" letter-spacing="1">
+    <textPath href="#text-path-bottom" startOffset="50%" text-anchor="middle">
+      "JOSÉ FÉLIX RIBAS"
+    </textPath>
+  </text>
+</svg>

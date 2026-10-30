@@ -409,6 +409,11 @@ const ControlActas = () => {
       return;
     }
 
+    if (!editingMeeting?.id && pendingPoints.length === 0) {
+      setErrorMsg("Agrega al menos un punto a discutir antes de crear la reunión.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -561,6 +566,12 @@ const ControlActas = () => {
                   className="controlActasForm"
                   onSubmit={(e) => {
                     e.preventDefault();
+                    const scheduleError = validateMeetingSchedule(meetingForm.date);
+                    if (scheduleError) {
+                      setErrorMsg(scheduleError);
+                      return;
+                    }
+                    setErrorMsg("");
                     setFormStep(2);
                   }}
                 >
@@ -670,6 +681,7 @@ const ControlActas = () => {
                     </select>
                   </div>
 
+                  {errorMsg && <p className="controlActasError">{errorMsg}</p>}
                   <div className="controlActasFormActions">
                     <button
                       className="controlActasSecondaryBtn"

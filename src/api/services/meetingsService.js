@@ -28,8 +28,10 @@ const cancel = async (meetingId, reason) => {
   return resp.data || resp;
 };
 
-const getAvailableAgenda = async () => {
-  const resp = await axiosClient.get("/meetings/agenda/available");
+const getAvailableAgenda = async (meetingId) => {
+  const resp = await axiosClient.get("/meetings/agenda/available", {
+    params: meetingId ? { meetingId } : {},
+  });
   return resp.data;
 };
 
@@ -91,6 +93,18 @@ const closeAnnualYear = async (year) => {
 const listAnnualArchives = async () => {
   const resp = await axiosClient.get('/meetings/annual-archives');
   return resp.data || [];
+};
+
+const getAnnualArchiveData = async (year) => {
+  const resp = await axiosClient.get(`/meetings/annual-archives/${year}/data`);
+  return resp.data || resp;
+};
+
+const downloadAnnualReportPdf = async (year) => {
+  const resp = await axiosClient.get(`/meetings/annual-archives/${year}/pdf`, {
+    responseType: "blob",
+  });
+  return resp.data;
 };
 
 const listAbsenceAlerts = async () => {
@@ -173,7 +187,9 @@ export default {
   create,
   createMeetingPoll,
   dismissNotification,
+  downloadAnnualReportPdf,
   finalizeAttendance,
+  getAnnualArchiveData,
   getAvailableAgenda,
   getById,
   getEvidenceUrl,

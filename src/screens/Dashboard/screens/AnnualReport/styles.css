@@ -1,0 +1,296 @@
+.arPage {
+  align-self: stretch;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-family: inherit;
+  height: 100vh;
+  overflow-y: auto;
+  text-align: left;
+  width: 100%;
+}
+
+.arInner {
+  margin: 0 auto;
+  max-width: 1040px;
+  padding: 24px 20px 48px;
+}
+
+.arState {
+  color: #1e293b;
+  font-size: 1rem;
+  padding: 48px 20px;
+  text-align: center;
+}
+
+.arState--error {
+  color: #b91c1c;
+}
+
+.arToolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.arBtn {
+  align-items: center;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 600;
+  gap: 6px;
+  padding: 10px 16px;
+}
+
+.arBtn--ghost {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.arBtn--primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.arBtn--primary:hover {
+  background: #1d4ed8;
+}
+
+.arHero {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.arHero h1 {
+  color: #0f172a;
+  font-size: 1.9rem;
+  margin: 0 0 8px;
+}
+
+.arHeroMeta {
+  color: #64748b;
+  margin: 4px 0;
+}
+
+.arCards {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 22px;
+}
+
+.arCard {
+  background: linear-gradient(180deg, #f8fbff 0%, #eef3ff 100%);
+  border: 1px solid #dbe4fa;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.arCard span {
+  color: #64748b;
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.arCard strong {
+  color: #1d4ed8;
+  font-size: 1.7rem;
+}
+
+.arMeeting {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  margin-top: 20px;
+  padding: 24px;
+}
+
+.arMeetingHead {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.arMeetingHead h2 {
+  color: #0f172a;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.arMeetingDesc {
+  color: #475569;
+  margin: 8px 0 0;
+}
+
+.arStatus {
+  border-radius: 999px;
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 6px 12px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.arStatus--programada {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.arStatus--en_curso {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.arStatus--finalizada {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.arStatus--cancelada {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.arMeta {
+  display: grid;
+  gap: 10px 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 18px 0;
+}
+
+.arMeta div {
+  color: #1e293b;
+  font-size: 0.92rem;
+}
+
+.arMeta span {
+  color: #64748b;
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.arNotice {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  margin: 12px 0;
+  padding: 12px 14px;
+}
+
+.arNotice span {
+  color: #991b1b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.arNotice p {
+  color: #7f1d1d;
+  margin: 6px 0 0;
+}
+
+.arBlock {
+  margin-top: 18px;
+}
+
+.arBlock h3 {
+  color: #0f172a;
+  font-size: 1.05rem;
+  margin: 0 0 10px;
+}
+
+.arBlock--compact p {
+  color: #334155;
+  margin: 8px 0;
+}
+
+.arTableWrap {
+  overflow-x: auto;
+}
+
+.arTable {
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  width: 100%;
+}
+
+.arTable th,
+.arTable td {
+  border: 1px solid #e2e8f0;
+  padding: 9px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.arTable th {
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 600;
+}
+
+.arBadge {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+}
+
+.arBadge--aprobado {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.arBadge--rechazado {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.arBadge--pendiente {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+@media (max-width: 820px) {
+  .arCards,
+  .arMeta {
+    grid-template-columns: 1fr;
+  }
+
+  .arMeetingHead {
+    flex-direction: column;
+  }
+}
+
+@media print {
+  .arPage {
+    background: #fff;
+    max-width: none;
+    padding: 0;
+  }
+
+  .arToolbar {
+    display: none;
+  }
+
+  .arHero,
+  .arMeeting {
+    border: 1px solid #e2e8f0;
+    break-inside: avoid;
+  }
+}

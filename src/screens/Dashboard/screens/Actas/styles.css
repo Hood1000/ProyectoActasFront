@@ -224,6 +224,31 @@
   color: #334155;
 }
 
+.reunionesRejectForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reunionesRejectReason {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 8px 10px;
+  resize: vertical;
+  width: 100%;
+}
+
+.reunionesRejectMotivo {
+  background: #fef2f2;
+  border-radius: 8px;
+  color: #991b1b;
+  font-size: 0.85rem;
+  margin: 6px 0 0;
+  padding: 6px 10px;
+}
+
 /* ── Cancellation notice ── */
 .reunionesCancelledNotice {
   background: #fef2f2;

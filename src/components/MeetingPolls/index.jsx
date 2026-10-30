@@ -5,7 +5,6 @@ import {
   IconGavel,
   IconInfoCircle,
   IconLock,
-  IconMinus,
   IconPlus,
   IconThumbDown,
   IconThumbUp,
@@ -22,7 +21,6 @@ const MANAGER_ROLES = ["ADMIN", "SECRETARIO"];
 const OPTIONS = [
   { icon: IconThumbUp, key: "aFavor", label: "A favor", value: "A_FAVOR" },
   { icon: IconThumbDown, key: "enContra", label: "En contra", value: "EN_CONTRA" },
-  { icon: IconMinus, key: "abstencion", label: "Abstención", value: "ABSTENCION" },
 ];
 
 const OPTION_LABELS = Object.fromEntries(OPTIONS.map((option) => [option.value, option.label]));
@@ -63,6 +61,7 @@ export const PollCard = ({
   const results = poll.results || { aFavor: 0, abstencion: 0, enContra: 0, total: 0 };
   const myVote = poll.votes?.find((vote) => vote.voterId === userId)?.option || "";
   const verdict = getVerdict(results);
+  const pendingVoters = Math.max(0, (presentCount || 0) - (results.total || 0));
 
   const handleVote = async (option) => {
     if (!canVote || !isOpen || isVoting || option === myVote) return;
@@ -201,7 +200,11 @@ export const PollCard = ({
 
       {isManager && isOpen && (
         <div className="mpollManage">
-          {confirmClose ? (
+          {pendingVoters > 0 ? (
+            <span className="mpollMyVote">
+              <IconInfoCircle size={14} /> Faltan {pendingVoters} de {presentCount} presentes por votar para poder cerrar.
+            </span>
+          ) : confirmClose ? (
             <>
               <span>¿Cerrar la votación? Ya no se podrán emitir ni cambiar votos.</span>
               <div className="mpollManageActions">

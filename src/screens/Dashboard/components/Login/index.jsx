@@ -44,7 +44,10 @@ const Login = () => {
       const status = err?.response?.status;
       if (status === 401) {
         setError(
-          "Credenciales inválidas. Por favor verifica usuario y contraseña.",
+          normalizeErrorMessage(
+            err,
+            "Credenciales inválidas. Por favor verifica usuario y contraseña.",
+          ),
         );
       } else if (status >= 400 && status < 500) {
         setError(normalizeErrorMessage(err, "Solicitud inválida."));
