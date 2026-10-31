@@ -11,6 +11,7 @@ import { DEFAULT_PAGE_SIZE } from "../../../../components/Pagination/constants";
 import { clampPage, paginate } from "../../../../components/Pagination/utils";
 import { useAuth } from "../../../../context/AuthContext";
 import { useNotifications } from "../../../../context/NotificationsContext";
+import { isPreviousMinutePoint } from "../../../../utils/agenda";
 import { openMeetingEvidence } from "../../../../utils/evidence";
 import { readSessionPreference, writeSessionPreference } from "../../../../utils/sessionPreference";
 import "./styles.css";
@@ -51,12 +52,6 @@ const formatDate = (value) => {
     timeZone: "America/Caracas",
   });
 };
-
-const PREVIOUS_MINUTE_TITLE = "lectura del acta anterior";
-
-const isPreviousMinutePoint = (point) =>
-  Boolean(point?.isBasePoint) &&
-  (point?.title || "").trim().toLowerCase() === PREVIOUS_MINUTE_TITLE;
 
 const canMeetingReceivePoints = (meeting) => {
   if (!meeting) return false;
@@ -357,6 +352,11 @@ const Actas = () => {
     return detailMeeting.agendaPoints.filter((p) => p.status === "RECHAZADO");
   }, [detailMeeting]);
 
+  const detailDeferredPoints = useMemo(() => {
+    if (!detailMeeting?.agendaPoints) return [];
+    return detailMeeting.agendaPoints.filter((p) => p.status === "DIFERIDO");
+  }, [detailMeeting]);
+
   const getAttendanceStateForUser = (meeting, userId) => {
     if (!meeting?.attendance) return { isConfirmed: false, isInvited: false };
     const entry = meeting.attendance.find((item) => item?.userId === userId);
@@ -617,7 +617,7 @@ const Actas = () => {
                           detailMeeting.previousMinute.points.length > 0 && (
                             <div className="reunionesPreviousMinute">
                               <span className="reunionesPreviousMinuteLabel">
-                                Puntos pendientes del acta anterior
+                                Puntos pendientes y diferidos del acta anterior
                                 {detailMeeting.previousMinute.date
                                   ? ` (${formatDate(detailMeeting.previousMinute.date)})`
                                   : ""}
@@ -704,6 +704,23 @@ const Actas = () => {
                             </button>
                           </div>
                         )}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {detailDeferredPoints.length > 0 && (
+                <section className="reunionesSection">
+                  <h4 className="reunionesSectionTitle">Puntos diferidos a la próxima reunión</h4>
+                  <ul className="reunionesPointsList">
+                    {detailDeferredPoints.map((point) => (
+                      <li key={point.id} className="reunionesPointItem">
+                        <strong>{point.title}</strong>
+                        <p>{point.description}</p>
+                        <span className="reunionesPointAuthor">
+                          {point.proposer?.name || "Coordinación"}
+                        </span>
                       </li>
                     ))}
                   </ul>

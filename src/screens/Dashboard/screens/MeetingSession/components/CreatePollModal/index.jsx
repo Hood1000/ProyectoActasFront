@@ -1,42 +1,37 @@
 import React, { useMemo, useState } from "react";
-import { IconBulb, IconCheck, IconGavel, IconMinus, IconThumbDown, IconThumbUp } from "@tabler/icons-react";
+import { IconBulb, IconCheck, IconGavel, IconThumbDown, IconThumbUp } from "@tabler/icons-react";
 import meetingsService from "../../../../../../api/services/meetingsService";
+import { getVotablePoints } from "../../../../../../utils/agenda";
 import SessionModal from "../SessionModal";
 
-const MIN_LENGTH = 5;
-const MAX_LENGTH = 500;
-
-const GENERIC_SUGGESTIONS = [
-  "¿Se aprueba el acta de la reunión anterior?",
-  "¿Se aprueba el orden del día propuesto?",
-];
-
-/** Ventana para abrir una nueva pregunta, con ayuda y sugerencias del orden del día. */
-const CreatePollModal = ({ meeting, onClose, onCreated }) => {
-  const [question, setQuestion] = useState("");
+/**
+ * Ventana para abrir la votación de un punto del orden del día. Cada votación queda fijada a
+ * un punto aprobado y cada punto se vota una sola vez: los que ya tienen votación no se ofrecen.
+ * La lectura del acta anterior se aprueba sin votación.
+ */
+const CreatePollModal = ({ meeting, polls = [], onClose, onCreated }) => {
+  const [selectedPointId, setSelectedPointId] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const suggestions = useMemo(() => {
-    const fromAgenda = (meeting?.agendaPoints || [])
-      .filter((point) => point.status === "APROBADO")
-      .map((point) => `¿Se aprueba el punto "${point.title}"?`);
-    return [...new Set([...fromAgenda, ...GENERIC_SUGGESTIONS])].slice(0, 6);
-  }, [meeting?.agendaPoints]);
+  const agendaPoints = useMemo(
+    () => getVotablePoints(meeting?.agendaPoints, polls),
+    [meeting?.agendaPoints, polls],
+  );
 
-  const text = question.trim();
-  const isValid = text.length >= MIN_LENGTH;
+  const availablePoints = agendaPoints.filter((point) => !point.hasPoll);
+  const selectedPoint = availablePoints.find((point) => point.id === selectedPointId);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!isValid) {
-      setError(`La pregunta debe tener al menos ${MIN_LENGTH} caracteres.`);
+    if (!selectedPoint) {
+      setError("Selecciona el punto del orden del día que se va a votar.");
       return;
     }
     setIsSaving(true);
     setError("");
     try {
-      onCreated(await meetingsService.createMeetingPoll(meeting.id, { question: text }));
+      onCreated(await meetingsService.createMeetingPoll(meeting.id, { agendaPointId: selectedPoint.id }));
     } catch (err) {
       setError(err?.response?.data?.message || "No se pudo abrir la votación.");
       setIsSaving(false);
@@ -53,7 +48,7 @@ const CreatePollModal = ({ meeting, onClose, onCreated }) => {
           </button>
           <button
             className="msessionBtn msessionBtn--primary"
-            disabled={isSaving || !isValid}
+            disabled={isSaving || !selectedPoint}
             form="msession-create-poll"
             type="submit"
           >
@@ -68,45 +63,47 @@ const CreatePollModal = ({ meeting, onClose, onCreated }) => {
       wide
     >
       <form className="msessionForm" id="msession-create-poll" onSubmit={handleSubmit}>
-        <label className="msessionLabel" htmlFor="msession-poll-question">
-          Pregunta a votar
-        </label>
-        <textarea
-          autoFocus
-          className="msessionTextarea"
-          id="msession-poll-question"
-          maxLength={MAX_LENGTH}
-          onChange={(event) => {
-            setQuestion(event.target.value);
-            setError("");
-          }}
-          placeholder="Ej: ¿Se aprueba el cronograma de evaluaciones del lapso?"
-          rows={3}
-          value={question}
-        />
-        <div className="msessionFormMeta">
-          <span>Redáctala como una pregunta de sí o no.</span>
-          <span>
-            {question.length}/{MAX_LENGTH}
-          </span>
+        <div className="msessionSuggestions">
+          <span className="msessionLabel">Punto del orden del día a votar</span>
+          {availablePoints.length === 0 ? (
+            <p className="msessionHintText">
+              {agendaPoints.length === 0
+                ? "La reunión no tiene puntos por votar: la lectura del acta anterior se aprueba sin votación."
+                : "Todos los puntos del orden del día ya tienen su votación."}
+            </p>
+          ) : (
+            <div className="msessionSuggestionList" role="radiogroup">
+              {agendaPoints.map((point) => {
+                const isActive = point.id === selectedPointId;
+                return (
+                  <button
+                    aria-checked={isActive}
+                    className={`msessionSuggestion ${isActive ? "isActive" : ""}`}
+                    disabled={point.hasPoll}
+                    key={point.id}
+                    onClick={() => {
+                      setSelectedPointId(point.id);
+                      setError("");
+                    }}
+                    role="radio"
+                    title={point.hasPoll ? "Este punto ya tiene su votación" : point.description}
+                    type="button"
+                  >
+                    {isActive && <IconCheck size={14} />}
+                    Punto {point.number}: {point.title}
+                    {point.hasPoll && " · ya votado"}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {suggestions.length > 0 && (
-          <div className="msessionSuggestions">
-            <span className="msessionLabel">Sugerencias</span>
-            <div className="msessionSuggestionList">
-              {suggestions.map((suggestion) => (
-                <button
-                  className={`msessionSuggestion ${question === suggestion ? "isActive" : ""}`}
-                  key={suggestion}
-                  onClick={() => setQuestion(suggestion)}
-                  type="button"
-                >
-                  {question === suggestion && <IconCheck size={14} />}
-                  {suggestion}
-                </button>
-              ))}
-            </div>
+        {selectedPoint && (
+          <div className="msessionFormMeta">
+            <span>
+              Se preguntará: <strong>¿Se aprueba el punto "{selectedPoint.title}"?</strong>
+            </span>
           </div>
         )}
 
@@ -123,10 +120,9 @@ const CreatePollModal = ({ meeting, onClose, onCreated }) => {
               <span className="msessionOptionTag msessionOptionTag--contra">
                 <IconThumbDown size={13} /> En contra
               </span>
-              <span className="msessionOptionTag">
-                <IconMinus size={13} /> Abstención
-              </span>
             </li>
+            <li>Cada punto del orden del día se vota una sola vez. La lectura del acta anterior se aprueba sin votación.</li>
+            <li>Los puntos que no se voten antes de finalizar la reunión quedan diferidos para la próxima.</li>
             <li>Solo votan los convocados con asistencia presente; pueden cambiar su voto mientras siga abierta.</li>
             <li>Ciérrala desde su tarjeta en el chat cuando termine la discusión. Al finalizar la reunión se cierran todas.</li>
           </ul>

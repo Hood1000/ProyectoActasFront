@@ -266,6 +266,11 @@
   color: #92400e;
 }
 
+.arBadge--diferido {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
 @media (max-width: 820px) {
   .arCards,
   .arMeta {

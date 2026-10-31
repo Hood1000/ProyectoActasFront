@@ -16,7 +16,7 @@ import SessionModal from "../SessionModal";
 const MANAGER_STEPS = [
   { icon: IconMessages, title: "Modera la conversación", text: "El chat es el espacio de la reunión: todos los convocados pueden escribir." },
   { icon: IconPlayerPlay, title: "Inicia la votación", text: "Con la asistencia cerrada y quórum, abre la fase desde el menú ⋮." },
-  { icon: IconChartBar, title: "Abre preguntas", text: "Usa el botón de votación junto al campo de texto. La pregunta aparece en el chat." },
+  { icon: IconChartBar, title: "Vota cada punto", text: "Usa el botón de votación junto al campo de texto y elige el punto del orden del día. Cada punto se vota una vez." },
   { icon: IconChecklist, title: "Cierra cada votación", text: "Desde la tarjeta de la pregunta, cuando termine la discusión." },
   { icon: IconFlag, title: "Finaliza la reunión", text: "Carga el acta firmada desde el menú ⋮. El chat quedará como registro." },
 ];
@@ -24,7 +24,7 @@ const MANAGER_STEPS = [
 const PARTICIPANT_STEPS = [
   { icon: IconMessages, title: "Participa en el chat", text: "Escribe tus comentarios y dudas durante la reunión." },
   { icon: IconUserCheck, title: "Confirma tu asistencia", text: "Solo quienes están presentes pueden votar." },
-  { icon: IconHandFinger, title: "Vota desde el chat", text: "Las votaciones aparecen como tarjetas: elige A favor, En contra o Abstención." },
+  { icon: IconHandFinger, title: "Vota desde el chat", text: "Las votaciones aparecen como tarjetas: elige A favor o En contra." },
   { icon: IconLock, title: "Al finalizar", text: "Cuando Secretaría cierre la reunión, el chat queda en solo lectura." },
 ];
 

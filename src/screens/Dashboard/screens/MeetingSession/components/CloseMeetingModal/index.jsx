@@ -1,18 +1,28 @@
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { IconAlertTriangle, IconFileText, IconFlag, IconUpload } from "@tabler/icons-react";
 import meetingsService from "../../../../../../api/services/meetingsService";
+import { getVotablePoints } from "../../../../../../utils/agenda";
 import { MAX_EVIDENCE_BYTES } from "../../../../../../utils/evidence";
 import SessionModal from "../SessionModal";
 
-/** Ventana para cargar el acta firmada y finalizar la reunión. */
-const CloseMeetingModal = ({ meeting, onClose, onClosed, onOpenEvidence, openPollsCount }) => {
+/**
+ * Ventana para cargar el acta firmada y finalizar la reunión. Las votaciones abiertas deben
+ * cerrarse antes; los puntos aprobados sin votación quedan diferidos para la próxima reunión.
+ */
+const CloseMeetingModal = ({ meeting, onClose, onClosed, onOpenEvidence, polls = [] }) => {
   const fileInputRef = useRef(null);
   const [actaFile, setActaFile] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState("");
 
+  const openPollsCount = polls.filter((poll) => poll.status === "OPEN").length;
+  const deferredPoints = useMemo(
+    () => getVotablePoints(meeting.agendaPoints, polls).filter((point) => !point.hasPoll),
+    [meeting.agendaPoints, polls],
+  );
+
   const hasEvidence = Boolean(meeting.evidenceSignaturesUrl);
-  const canClose = hasEvidence || Boolean(actaFile);
+  const canClose = (hasEvidence || Boolean(actaFile)) && openPollsCount === 0;
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0] || null;
@@ -91,11 +101,28 @@ const CloseMeetingModal = ({ meeting, onClose, onClosed, onOpenEvidence, openPol
           <div>
             <strong>Esta acción no se puede deshacer.</strong>
             <ul>
-              <li>
-                {openPollsCount > 0
-                  ? `Se cerrarán ${openPollsCount} votación${openPollsCount === 1 ? "" : "es"} abierta${openPollsCount === 1 ? "" : "s"}.`
-                  : "No hay votaciones abiertas."}
-              </li>
+              {openPollsCount > 0 && (
+                <li>
+                  <strong>
+                    Hay {openPollsCount} votación{openPollsCount === 1 ? "" : "es"} abierta{openPollsCount === 1 ? "" : "s"}:
+                  </strong>{" "}
+                  ciérrala{openPollsCount === 1 ? "" : "s"} antes de finalizar. Para cerrarla deben votar todos los presentes.
+                </li>
+              )}
+              {deferredPoints.length > 0 ? (
+                <li>
+                  Quedarán <strong>diferidos para la próxima reunión</strong> por no haberse votado:
+                  <ul>
+                    {deferredPoints.map((point) => (
+                      <li key={point.id}>
+                        Punto {point.number}: {point.title}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ) : (
+                <li>Todos los puntos del orden del día tienen su votación.</li>
+              )}
               <li>El chat quedará como registro de solo lectura.</li>
               <li>Ya no se podrán registrar votos ni cambios de asistencia.</li>
             </ul>

@@ -12,6 +12,7 @@ const POINT_STATUS = {
   PENDIENTE: { label: "Pendiente", className: "agendaBadge--pendiente" },
   APROBADO: { label: "Aprobado", className: "agendaBadge--aprobado" },
   RECHAZADO: { label: "Rechazado", className: "agendaBadge--rechazado" },
+  DIFERIDO: { label: "Diferido", className: "agendaBadge--diferido" },
 };
 
 const MEETING_STATUS = {

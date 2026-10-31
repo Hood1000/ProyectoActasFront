@@ -9,6 +9,7 @@ export const POINT_STATUS = {
   PENDIENTE: { label: "Pendiente", className: "arBadge--pendiente" },
   APROBADO: { label: "Aprobado", className: "arBadge--aprobado" },
   RECHAZADO: { label: "Rechazado", className: "arBadge--rechazado" },
+  DIFERIDO: { label: "Diferido", className: "arBadge--diferido" },
 };
 
 export const ATTENDANCE_STATUS = {

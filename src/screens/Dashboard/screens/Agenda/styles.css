@@ -224,6 +224,11 @@
   color: #991b1b;
 }
 
+.agendaPointHeader .agendaBadge--diferido {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
 .agendaRejectReason {
   background: #fef2f2;
   border-radius: 8px;

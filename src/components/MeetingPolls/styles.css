@@ -308,13 +308,6 @@
   color: #b91c1c;
 }
 
-.mpollVoteBtn--abstencion:hover,
-.mpollVoteBtn--abstencion.isSelected {
-  background: #f8fafc;
-  border-color: #64748b;
-  color: #334155;
-}
-
 .mpollVoteBtn.isSelected {
   box-shadow: inset 0 0 0 1px currentColor;
 }
@@ -368,7 +361,6 @@
 
 .mpollBarFill--a_favor { background: #22c55e; }
 .mpollBarFill--en_contra { background: #ef4444; }
-.mpollBarFill--abstencion { background: #94a3b8; }
 
 .mpollFooter {
   align-items: center;
@@ -432,6 +424,7 @@
 
 .mpollVoterOption--a_favor { background: #dcfce7; color: #166534; }
 .mpollVoterOption--en_contra { background: #fee2e2; color: #991b1b; }
+/* Votos de abstención anteriores a que se eliminara la opción. */
 .mpollVoterOption--abstencion { background: #f1f5f9; color: #475569; }
 
 .mpollManage {

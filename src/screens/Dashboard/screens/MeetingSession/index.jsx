@@ -445,7 +445,7 @@ const MeetingSession = () => {
       )}
 
       {modal === "create" && (
-        <CreatePollModal meeting={meeting} onClose={() => setModal(null)} onCreated={handlePollCreated} />
+        <CreatePollModal meeting={meeting} polls={polls} onClose={() => setModal(null)} onCreated={handlePollCreated} />
       )}
 
       {modal === "close" && (
@@ -454,7 +454,7 @@ const MeetingSession = () => {
           onClose={() => setModal(null)}
           onClosed={handleMeetingClosed}
           onOpenEvidence={handleOpenEvidence}
-          openPollsCount={openPolls.length}
+          polls={polls}
         />
       )}
     </section>
