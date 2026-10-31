@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { IconPrinter, IconX } from "@tabler/icons-react";
+import membrete from "../../../../../../assets/membrete.jpg";
 import { formatDate } from "../../utils";
 import "./styles.css";
 
@@ -15,7 +16,8 @@ const WarningDocument = ({ onClose, warning }) => {
       <button aria-label="Imprimir amonestación" className="attIconBtn" onClick={() => window.print()} title="Imprimir amonestación" type="button"><IconPrinter size={18} /></button>
       <button aria-label="Cerrar amonestación" className="attIconBtn" onClick={onClose} title="Cerrar" type="button"><IconX size={18} /></button>
     </div>
-    <header className="warningDocumentHeader"><span>UPT José Félix Ribas</span><h2 id="warning-document-title">Amonestación por inasistencias injustificadas</h2><p>Año {warning.academicYear}</p></header>
+    <img alt="Membrete institucional" className="warningDocumentLetterhead" src={membrete} />
+    <header className="warningDocumentHeader"><h2 id="warning-document-title">Amonestación por inasistencias injustificadas</h2><p>Año {warning.academicYear}</p></header>
     <dl className="warningDocumentMeta">
       <div><dt>Docente</dt><dd>{teacher?.name}</dd></div>
       <div><dt>Cédula</dt><dd>{teacher?.cedula || "No registrada"}</dd></div>

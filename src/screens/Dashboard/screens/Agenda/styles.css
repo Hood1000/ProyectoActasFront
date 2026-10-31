@@ -1,39 +1,65 @@
 .agendaPage {
+  --agenda-navy: #102a71;
+  --agenda-ink: #0f172a;
+  --agenda-orange: #f97316;
+  --agenda-blue: #1d4ed8;
+  --agenda-teal: #0f766e;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   min-height: 0;
-  padding: 16px;
+  padding: 24px;
 }
 
+/* Encabezado con los colores del menú lateral */
 .agendaHeader {
   align-items: center;
-  display: flex;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(249, 115, 22, 0.35), transparent 40%),
+    linear-gradient(135deg, var(--agenda-navy) 0%, var(--agenda-ink) 100%);
+  border-radius: 16px;
+  box-shadow: 0 14px 30px rgba(16, 42, 113, 0.22);
+  display: grid;
   gap: 12px;
-  justify-content: space-between;
+  grid-template-columns: 1fr minmax(0, max-content) 1fr;
+  padding: 22px 24px;
+}
+
+/* Título centrado; el contador queda a la derecha */
+.agendaHeader > div:first-child {
+  grid-column: 2;
+  text-align: center;
+}
+
+.agendaCounter {
+  grid-column: 3;
+  justify-self: end;
 }
 
 .agendaTitle {
-  color: #0f172a;
-  font-size: 1.4rem;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 800;
   margin: 0;
 }
 
 .agendaSubtitle {
-  color: #64748b;
+  color: rgba(226, 232, 240, 0.85);
   margin: 4px 0 0;
 }
 
 .agendaCounter {
   align-items: center;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.9) 0%, rgba(239, 68, 68, 0.85) 100%);
+  border: 1px solid rgba(251, 146, 60, 0.6);
   border-radius: 999px;
-  color: #1d4ed8;
+  box-shadow: 0 6px 14px rgba(249, 115, 22, 0.3);
+  color: #ffffff;
   display: inline-flex;
-  font-weight: 700;
-  min-height: 36px;
-  padding: 0 14px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  min-height: 40px;
+  padding: 0 18px;
 }
 
 .agendaMessageCard,
@@ -42,33 +68,63 @@
 .agendaListCard {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
-  padding: 14px;
+  padding: 18px;
+}
+
+.agendaMessageCard {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  border-left: 4px solid var(--agenda-blue);
+  color: #1e3a8a;
 }
 
 .agendaMeetingCard h3,
 .agendaFormCard h3,
 .agendaListCard h3 {
+  color: var(--agenda-ink);
   margin: 0;
+}
+
+/* Convocatoria destacada con el acento naranja */
+.agendaMeetingCard {
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+  border-color: #fed7aa;
+  border-left: 5px solid var(--agenda-orange);
+}
+
+.agendaMeetingCard h3 {
+  font-size: 1.15rem;
 }
 
 .agendaMeetingCard p {
   color: #334155;
   line-height: 1.5;
-  margin: 10px 0;
+  margin: 10px 0 14px;
 }
 
 .agendaMeetingMeta {
-  color: #64748b;
-  display: grid;
-  gap: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.agendaMeetingMeta span {
+  background: #ffffff;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  color: #9a3412;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 4px 12px;
 }
 
 .agendaFormCard {
+  border-top: 4px solid var(--agenda-blue);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .agendaFormHeader {
@@ -78,13 +134,18 @@
 }
 
 .agendaFormHeader span {
-  color: #1d4ed8;
-  font-weight: 600;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  color: var(--agenda-blue);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 3px 12px;
 }
 
 .agendaFormGrid {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -106,13 +167,16 @@
 
 .agendaField input,
 .agendaField textarea {
+  background: #f8fafc;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 10px;
+  font-family: inherit;
+  padding: 10px 12px;
 }
 
 .agendaField input:focus,
 .agendaField textarea:focus {
+  background: #ffffff;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
   outline: none;
@@ -121,9 +185,9 @@
 .agendaFeedback {
   background: #ecfeff;
   border: 1px solid #a5f3fc;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #0e7490;
-  padding: 10px;
+  padding: 10px 12px;
 }
 
 .agendaFormActions {
@@ -132,23 +196,50 @@
 }
 
 .agendaFormActions button {
-  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
-  border: 1px solid #1d4ed8;
+  background: linear-gradient(135deg, var(--agenda-blue) 0%, var(--agenda-teal) 100%);
+  border: 0;
   border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(29, 78, 216, 0.25);
   color: #ffffff;
   cursor: pointer;
-  font-weight: 600;
-  min-height: 40px;
-  padding: 0 14px;
+  font-weight: 700;
+  min-height: 42px;
+  padding: 0 20px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.agendaFormActions button:hover:not(:disabled) {
+  box-shadow: 0 10px 22px rgba(29, 78, 216, 0.32);
+  transform: translateY(-1px);
 }
 
 .agendaFormActions button:disabled {
   background: #e2e8f0;
-  border-color: #cbd5e1;
   box-shadow: none;
   color: #94a3b8;
   cursor: not-allowed;
-  opacity: 1;
+  transform: none;
+}
+
+/* Títulos de las listas con una barra de acento */
+.agendaListCard h3 {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.agendaListCard h3::before {
+  background: linear-gradient(180deg, var(--agenda-orange) 0%, #ef4444 100%);
+  border-radius: 999px;
+  content: "";
+  display: inline-block;
+  height: 18px;
+  width: 4px;
+}
+
+.agendaListCard > p {
+  color: #64748b;
+  margin: 12px 0 0;
 }
 
 .agendaPointList {
@@ -156,21 +247,36 @@
   flex-direction: column;
   gap: 10px;
   list-style: none;
-  margin: 12px 0 0;
+  margin: 14px 0 0;
   padding: 0;
 }
 
 .agendaPointList li {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
+  border-left: 4px solid var(--agenda-blue);
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px 14px;
+  transition: box-shadow 0.15s;
 }
+
+.agendaPointList li:hover {
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+}
+
+.agendaPointList li:has(.agendaBadge--pendiente) { border-left-color: #f59e0b; }
+.agendaPointList li:has(.agendaBadge--aprobado) { border-left-color: #10b981; }
+.agendaPointList li:has(.agendaBadge--rechazado) { border-left-color: #ef4444; }
 
 .agendaPointHeader {
   align-items: center;
   display: flex;
+  gap: 10px;
   justify-content: space-between;
+}
+
+.agendaPointHeader strong {
+  color: var(--agenda-ink);
 }
 
 .agendaPointHeader span {
@@ -184,9 +290,10 @@
 }
 
 .agendaSelector select {
+  background: #ffffff;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
 }
 
 .agendaSelector select:focus {
@@ -200,10 +307,12 @@
   display: block;
   font-size: 0.82rem;
   margin-top: 4px;
+  padding-left: 14px;
 }
 
 .agendaPointHeader .agendaBadge {
   border-radius: 999px;
+  flex-shrink: 0;
   font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 10px;
@@ -239,9 +348,19 @@
 }
 
 @media (max-width: 760px) {
+  .agendaPage {
+    padding: 16px;
+  }
+
   .agendaHeader {
-    align-items: flex-start;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .agendaHeader > div:first-child,
+  .agendaCounter {
+    grid-column: 1;
+    justify-self: center;
   }
 
   .agendaFormGrid {

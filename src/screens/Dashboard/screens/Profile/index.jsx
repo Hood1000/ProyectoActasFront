@@ -1,5 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { IconDeviceFloppy } from "@tabler/icons-react";
+import {
+  IconBriefcase,
+  IconCertificate,
+  IconDeviceFloppy,
+  IconId,
+  IconMail,
+  IconPhone,
+} from "@tabler/icons-react";
 import { useAuth } from "../../../../context/AuthContext";
 import usersService from "../../../../api/services/usersService";
 import "./styles.css";
@@ -91,14 +98,22 @@ const Profile = () => {
   return (
     <section className="profilePage">
       <header className="profileHeader">
-        <div>
-          <h2 className="profileTitle">Mi Perfil</h2>
+        <div className="profileHeaderInfo">
+          <span className="profileEyebrow">Mi Perfil</span>
+          <h2 className="profileTitle">{user?.name || "Usuario"}</h2>
           <p className="profileSubtitle">
-            Administra tu información personal e institucional desde un solo
-            lugar.
+            <IconMail size={16} /> {user?.email || "Sin correo registrado"}
           </p>
+          <div className="profileHeaderChips">
+            <span className="profileRoleBadge">{roleLabel}</span>
+            <span className="profileChip">
+              <IconId size={15} /> {user?.cedula || "Cédula no registrada"}
+            </span>
+            <span className="profileChip">
+              <IconPhone size={15} /> {user?.phoneNumber || "Teléfono no registrado"}
+            </span>
+          </div>
         </div>
-        <div className="profileRoleBadge">{roleLabel}</div>
       </header>
 
       <form className="profileFormCard" onSubmit={handleSubmit}>
@@ -171,13 +186,19 @@ const Profile = () => {
 
           <div className="profileReadOnlyGrid">
             <article className="profileReadOnlyCard">
+              <span className="profileReadOnlyIcon">
+                <IconBriefcase size={22} />
+              </span>
               <span className="profileReadOnlyLabel">Dedicación</span>
               <strong className="profileReadOnlyValue">
                 {user?.dedicacion || "No registrada"}
               </strong>
             </article>
 
-            <article className="profileReadOnlyCard">
+            <article className="profileReadOnlyCard profileReadOnlyCard--accent">
+              <span className="profileReadOnlyIcon">
+                <IconCertificate size={22} />
+              </span>
               <span className="profileReadOnlyLabel">Condición</span>
               <strong className="profileReadOnlyValue">
                 {user?.condicion || "No registrada"}

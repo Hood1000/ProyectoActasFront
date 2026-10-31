@@ -222,7 +222,7 @@ const ControlPanel = () => {
           <div className="cp-adminActions">
             <button
               type="button"
-              className="cp-manageUsersBtn"
+              className="cp-manageUsersBtn cp-manageUsersBtn--accent"
               disabled={isClosingYear}
               onClick={() => {
                 setAnnualCloseYear(String(new Date().getFullYear()));

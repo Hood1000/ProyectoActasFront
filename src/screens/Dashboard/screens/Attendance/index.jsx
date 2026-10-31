@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { IconCircleCheck, IconCircleX, IconFileCertificate, IconRefresh } from "@tabler/icons-react";
+import {
+  IconCalendarEvent,
+  IconCircleCheck,
+  IconCircleX,
+  IconClock,
+  IconFileCertificate,
+  IconMapPin,
+  IconRefresh,
+} from "@tabler/icons-react";
 import meetingsService from "../../../../api/services/meetingsService";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
@@ -173,22 +181,41 @@ const AttendanceRegistration = () => {
       ) : (
         <>
           <div className="attToolbar">
-            <label htmlFor="att-meeting">Reunión</label>
-            <select
-              id="att-meeting"
-              onChange={(event) => {
-                setSelectedId(event.target.value);
-                setExcuseFor("");
-                setMessage({ text: "", tone: "" });
-              }}
-              value={meeting.id}
-            >
-              {candidates.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {MEETING_STATUS_LABELS[item.status]} · {item.title} · {formatDate(item.date)}
-                </option>
-              ))}
-            </select>
+            <span className="attToolbarIcon">
+              <IconCalendarEvent size={22} />
+            </span>
+            <div className="attToolbarField">
+              <label htmlFor="att-meeting">
+                Reunión
+                {candidates.length > 1 && <small>{candidates.length} disponibles</small>}
+              </label>
+              <select
+                id="att-meeting"
+                onChange={(event) => {
+                  setSelectedId(event.target.value);
+                  setExcuseFor("");
+                  setMessage({ text: "", tone: "" });
+                }}
+                value={meeting.id}
+              >
+                {candidates.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {MEETING_STATUS_LABELS[item.status]} · {item.title} · {formatDate(item.date)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="attToolbarMeta">
+              <span className={`attMeetingStatus attMeetingStatus--${meeting.status.toLowerCase()}`}>
+                {MEETING_STATUS_LABELS[meeting.status]}
+              </span>
+              <span className="attMetaItem">
+                <IconClock size={15} /> {formatDate(meeting.date)}
+              </span>
+              <span className="attMetaItem">
+                <IconMapPin size={15} /> {meeting.location || "Sin lugar"}
+              </span>
+            </div>
           </div>
 
           <div className="attSummary">
@@ -350,10 +377,10 @@ const AttendanceRegistration = () => {
 const Attendance = () => {
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
-  const isAdmin = user?.role === "ADMIN";
-  const historyVisible = isAdmin && params.get("view") === "history";
+  const canSeeHistory = ["ADMIN", "SECRETARIO"].includes(user?.role);
+  const historyVisible = canSeeHistory && params.get("view") === "history";
   return <div className="attWorkspace">
-    {isAdmin && <div aria-label="Vistas de asistencia" className="attViews" role="tablist">
+    {canSeeHistory && <div aria-label="Vistas de asistencia" className="attViews" role="tablist">
       <button aria-selected={!historyVisible} onClick={() => setParams({ view: "registration" })} role="tab" type="button">Registro por reunión</button>
       <button aria-selected={historyVisible} onClick={() => setParams({ view: "history" })} role="tab" type="button">Historial por docente</button>
     </div>}

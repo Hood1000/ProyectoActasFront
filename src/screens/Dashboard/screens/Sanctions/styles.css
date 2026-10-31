@@ -1,24 +1,47 @@
 .sanctionsPage {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   min-height: 0;
   min-width: 0;
-  padding: 16px;
+  padding: 24px;
   width: 100%;
 }
 
+/* Encabezado con los colores del menú lateral, título centrado */
 .sanctionsHeader {
-  align-items: flex-start;
-  display: flex;
+  align-items: center;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(249, 115, 22, 0.35), transparent 40%),
+    linear-gradient(135deg, #102a71 0%, #0f172a 100%);
+  border-radius: 16px;
+  box-shadow: 0 14px 30px rgba(16, 42, 113, 0.22);
+  display: grid;
   gap: 16px;
-  justify-content: space-between;
+  grid-template-columns: 1fr minmax(0, max-content) 1fr;
+  padding: 22px 24px;
 }
 
 .sanctionsHeader h2 {
-  color: #0f172a;
-  font-size: 1.45rem;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 800;
+  grid-column: 2;
   margin: 0;
+  text-align: center;
+}
+
+.sanctionsHeader .attIconBtn {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  grid-column: 3;
+  justify-self: end;
+}
+
+.sanctionsHeader .attIconBtn:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .sanctionsHeader p {
@@ -57,22 +80,26 @@
 
 .sanctionsMessage,
 .sanctionsEmpty {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #1d4ed8;
   border-radius: 12px;
-  color: #334155;
+  color: #1e3a8a;
   padding: 14px;
 }
 
 .sanctionsList {
   display: grid;
   gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
 }
 
+/* Borde según el estado del caso: rojo sin amonestación, verde emitida */
 .sanctionsCard {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-left: 5px solid #1d4ed8;
+  border-radius: 14px;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
   display: flex;
   flex-direction: column;
@@ -81,14 +108,21 @@
   overflow-wrap: anywhere;
 }
 
-.sanctionsTabs { border-bottom: 1px solid #e2e8f0; display: flex; gap: 16px; }
-.sanctionsTabs button { background: transparent; border: 0; border-bottom: 3px solid transparent; color: #64748b; cursor: pointer; font: inherit; padding: 12px 0; }
-.sanctionsTabs button[aria-selected="true"] { border-bottom-color: #2563eb; color: #1d4ed8; }
-.sanctionsYear { color: #475569; display: flex; flex-direction: column; font-size: .85rem; gap: 6px; max-width: 220px; }
-.sanctionsYear select { border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; min-height: 40px; padding: 8px; }
-.sanctionsAbsences { list-style: none; margin: 0; padding: 0; }
-.sanctionsAbsences li { border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; font-size: .88rem; gap: 8px; justify-content: space-between; padding: 10px 0; }
-.sanctionsAbsences time { color: #64748b; }
+.sanctionsCard:has(.sanctionsStatus--pendiente) { border-left-color: #ef4444; }
+.sanctionsCard:has(.sanctionsStatus--revisada) { border-left-color: #10b981; }
+
+/* Pestañas tipo píldora: la activa con el azul marino del sistema */
+.sanctionsTabs { align-self: center; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 999px; display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; }
+.sanctionsTabs button { background: transparent; border: 0; border-radius: 999px; color: #475569; cursor: pointer; font: inherit; font-size: .9rem; font-weight: 600; padding: 8px 18px; transition: background .15s, color .15s; }
+.sanctionsTabs button:hover:not(:disabled):not([aria-selected="true"]) { background: #e2e8f0; color: #0f172a; }
+.sanctionsTabs button[aria-selected="true"] { background: linear-gradient(135deg, #102a71 0%, #1d4ed8 100%); box-shadow: 0 6px 14px rgba(16, 42, 113, 0.25); color: #ffffff; }
+.sanctionsYear { align-items: center; background: linear-gradient(135deg, #ffffff 0%, #f5f8ff 100%); border: 1px solid #dbe4fa; border-left: 5px solid #1d4ed8; border-radius: 14px; color: #102a71; display: flex; flex-direction: row; font-size: .78rem; font-weight: 700; gap: 12px; letter-spacing: .04em; padding: 12px 16px; text-transform: uppercase; }
+.sanctionsYear select { background: #ffffff; border: 1px solid #c7d4f2; border-radius: 10px; color: #0f172a; font: inherit; font-size: .95rem; font-weight: 600; letter-spacing: 0; min-height: 40px; min-width: 200px; padding: 8px 12px; text-transform: none; }
+.sanctionsYear select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); outline: none; }
+.sanctionsAbsences { display: flex; flex-direction: column; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.sanctionsAbsences li { align-items: center; background: #fef2f2; border: 1px solid #fee2e2; border-radius: 10px; display: flex; flex-wrap: wrap; font-size: .88rem; gap: 8px; justify-content: space-between; padding: 8px 12px; }
+.sanctionsAbsences strong { color: #7f1d1d; }
+.sanctionsAbsences time { background: #ffffff; border: 1px solid #fecaca; border-radius: 999px; color: #991b1b; font-size: .78rem; font-weight: 600; padding: 2px 10px; }
 .sanctionsBtn { align-items: center; display: inline-flex; gap: 8px; justify-content: center; text-decoration: none; }
 .sanctionsBtn:disabled { cursor: not-allowed; opacity: .6; }
 .sanctionsIssueForm { border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px; padding-top: 16px; }
@@ -102,8 +136,8 @@
 }
 
 .sanctionsCardHead h3 {
-  color: #0f172a;
-  font-size: 1rem;
+  color: #102a71;
+  font-size: 1.05rem;
   margin: 0;
 }
 
@@ -170,14 +204,24 @@
 
 .sanctionsBtn--ghost {
   background: #ffffff;
-  border-color: #d1d5db;
-  color: #475569;
+  border-color: #c7d4f2;
+  color: #1d4ed8;
+}
+
+.sanctionsBtn--ghost:hover:not(:disabled) {
+  background: #eff6ff;
+  border-color: #93c5fd;
 }
 
 .sanctionsBtn--primary {
-  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
-  border-color: #1d4ed8;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+  border: 0;
+  box-shadow: 0 8px 18px rgba(29, 78, 216, 0.25);
   color: #ffffff;
+}
+
+.sanctionsBtn--primary:hover:not(:disabled) {
+  box-shadow: 0 10px 22px rgba(29, 78, 216, 0.32);
 }
 
 .sanctionsReviewedText {
@@ -187,7 +231,24 @@
 }
 
 @media (max-width: 760px) {
+  .sanctionsPage {
+    padding: 16px;
+  }
+
   .sanctionsHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sanctionsHeader h2 {
+    grid-column: 1;
+  }
+
+  .sanctionsHeader .attIconBtn {
+    grid-column: 2;
+  }
+
+  .sanctionsYear {
+    align-items: stretch;
     flex-direction: column;
   }
 

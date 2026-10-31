@@ -83,7 +83,7 @@ const Sanctions = () => {
             </header>
             <ul className="sanctionsAbsences">{item.absences.map((absence) => <li key={absence.id}><strong>{absence.meeting.title}</strong><time dateTime={absence.meeting.date}>{formatDate(absence.meeting.date)}</time></li>)}</ul>
             <div className="sanctionsActions">
-              {user?.role === "ADMIN" && <Link className="sanctionsBtn sanctionsBtn--ghost" to={`/dashboard/attendance?view=history&teacherId=${item.teacher.id}&year=${year}`}><IconHistory size={17} />Ver historial</Link>}
+              {!isTeacher && <Link className="sanctionsBtn sanctionsBtn--ghost" to={`/dashboard/attendance?${new URLSearchParams({ view: "history", search: item.teacher.cedula || item.teacher.name, year })}`}><IconHistory size={17} />Ver historial</Link>}
               {item.warning ? <button className="sanctionsBtn sanctionsBtn--ghost" onClick={() => setDocument(item.warning)} type="button"><IconFileDescription size={17} />Ver amonestación</button>
                 : canIssue && <button className="sanctionsBtn sanctionsBtn--primary" disabled={issuing} onClick={() => { setSelectedCase(item.teacher.id); setContent(""); }} type="button"><IconFileDescription size={17} />Preparar amonestación</button>}
             </div>

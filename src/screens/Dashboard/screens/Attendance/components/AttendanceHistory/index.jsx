@@ -1,8 +1,9 @@
 import { useDeferredValue, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { IconArrowLeft, IconChevronRight, IconRefresh } from "@tabler/icons-react";
+import { IconArrowLeft, IconChevronRight, IconDownload, IconRefresh } from "@tabler/icons-react";
 import meetingsService from "../../../../../../api/services/meetingsService";
 import Pagination from "../../../../../../components/Pagination";
+import { downloadBlob } from "../../../../../../utils/download";
 import { CATEGORY_LABELS, MONTHS, STATUS_LABELS } from "./constants";
 import { attendanceError, currentPeriod, formatAttendanceDate, formatPercentage } from "./utils";
 import "./styles.css";
@@ -11,25 +12,46 @@ const AttendanceHistory = () => {
   const [params, setParams] = useSearchParams();
   const teacherId = params.get("teacherId") || "";
   const [year, setYear] = useState(() => params.get("year") || currentPeriod().year);
-  const [month, setMonth] = useState(() => params.has("teacherId") ? "" : currentPeriod().month);
-  const [search, setSearch] = useState("");
+  // Desde Inasistencias se llega filtrando por cédula y año completo (los casos se cuentan por año).
+  const [month, setMonth] = useState(() => params.has("teacherId") || params.has("search") ? "" : currentPeriod().month);
+  const [search, setSearch] = useState(() => params.get("search") || "");
   const deferredSearch = useDeferredValue(search);
   const [page, setPage] = useState(1);
-  const [data, setData] = useState(null);
+  const [loaded, setLoaded] = useState(null);
+  // Evita pintar el resumen con el formato del detalle (o al revés) mientras carga la nueva vista.
+  const data = loaded?.teacherId === teacherId ? loaded.result : null;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
+
+  const downloadReport = async () => {
+    setDownloading(true);
+    setDownloadError("");
+    try {
+      const blob = await meetingsService.downloadAttendanceReportPdf({ year, month });
+      downloadBlob(blob, `Asistencia-docentes-${MONTHS[month - 1]}-${year}.pdf`);
+    } catch (failure) {
+      // Con responseType "blob" el cuerpo del error también llega como Blob.
+      const body = failure?.response?.data;
+      const data = body instanceof Blob ? await body.text().then(JSON.parse).catch(() => null) : body;
+      setDownloadError(data?.message ? attendanceError({ response: { data } }) : "No se pudo generar el PDF de asistencia.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => {
     const controller = new AbortController();
     const query = { page, limit: 20, ...(year ? { year } : {}), ...(year && month ? { month } : {}), ...(!teacherId && deferredSearch.trim() ? { search: deferredSearch.trim() } : {}) };
     setLoading(true);
-    setData(null);
+    setLoaded(null);
     setError("");
     const load = teacherId
       ? meetingsService.getTeacherAttendanceHistory(teacherId, query, { signal: controller.signal })
       : meetingsService.getAttendanceSummary(query, { signal: controller.signal });
-    load.then((result) => { if (!controller.signal.aborted) setData(result); })
+    load.then((result) => { if (!controller.signal.aborted) setLoaded({ teacherId, result }); })
       .catch((failure) => { if (!controller.signal.aborted) setError(attendanceError(failure)); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
@@ -52,7 +74,12 @@ const AttendanceHistory = () => {
           {teacherId && <button aria-label="Volver a docentes" className="attIconBtn" onClick={() => selectTeacher("")} title="Volver a docentes" type="button"><IconArrowLeft size={18} /></button>}
           <div><h2>{data?.teacher?.name || "Historial por docente"}</h2>{data?.teacher && <span>Cédula: {data.teacher.cedula || "No registrada"}{!data.teacher.isActive ? " · Inactivo" : ""}</span>}</div>
         </div>
-        <button aria-label="Actualizar historial" className="attIconBtn" onClick={() => setRevision((value) => value + 1)} title="Actualizar historial" type="button"><IconRefresh size={18} /></button>
+        <div className="attendanceHistoryActions">
+          {!teacherId && <button className="attBtn attBtn--primary" disabled={!year || !month || downloading} onClick={downloadReport} title={year && month ? "Descargar resumen mensual de asistencia en PDF" : "Selecciona año y mes"} type="button">
+            <IconDownload size={16} />{downloading ? "Generando…" : "Descargar PDF del mes"}
+          </button>}
+          <button aria-label="Actualizar historial" className="attIconBtn" onClick={() => setRevision((value) => value + 1)} title="Actualizar historial" type="button"><IconRefresh size={18} /></button>
+        </div>
       </header>
 
       <div className="attendanceHistoryFilters">
@@ -67,6 +94,7 @@ const AttendanceHistory = () => {
       </div>
 
       {error && <div className="attMessage attMessage--error" role="alert">{error}</div>}
+      {downloadError && <div className="attMessage attMessage--error" role="alert">{downloadError}</div>}
       {loading && <p role="status">Cargando historial...</p>}
       {!loading && data && <>
         {teacherId && <dl className="attendanceHistoryTotals">

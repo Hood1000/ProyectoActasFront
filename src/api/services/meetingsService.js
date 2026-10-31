@@ -183,6 +183,9 @@ const getAttendanceSummary = async (params, config = {}) =>
 const getTeacherAttendanceHistory = async (teacherId, params, config = {}) =>
   (await axiosClient.get(`/meetings/attendance/history/${teacherId}`, { ...config, params })).data;
 
+const downloadAttendanceReportPdf = async (params) =>
+  (await axiosClient.get('/meetings/attendance/report/pdf', { params, responseType: "blob" })).data;
+
 const listAbsenceCases = async (params, config = {}) =>
   (await axiosClient.get('/meetings/absence-cases', { ...config, params })).data;
 
@@ -203,6 +206,7 @@ export default {
   createMeetingPoll,
   dismissNotification,
   downloadAnnualReportPdf,
+  downloadAttendanceReportPdf,
   finalizeAttendance,
   getAnnualArchiveData,
   getAttendanceSummary,

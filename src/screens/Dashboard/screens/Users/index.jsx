@@ -120,7 +120,10 @@ const Users = () => {
   return (
     <div className="usersContainer">
       <header className="usersHeader">
-        <div>
+        <span className="usersHeaderIcon">
+          <IconUsers size={26} />
+        </span>
+        <div className="usersHeaderText">
           <h2 className="usersTitle">Usuarios</h2>
           <p className="usersSubtitle">
             Registro de participantes habilitados dentro del sistema.

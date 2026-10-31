@@ -1,5 +1,6 @@
 .usersContainer {
-	padding: 16px;
+	box-sizing: border-box;
+	padding: 24px;
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
@@ -7,23 +8,48 @@
 	min-height: 0;
 }
 
+/* Encabezado con los colores del menú lateral */
 .usersHeader {
-	display: flex;
-	justify-content: space-between;
 	align-items: center;
-	gap: 12px;
+	background:
+		radial-gradient(circle at 92% 0%, rgba(249, 115, 22, 0.35), transparent 40%),
+		linear-gradient(135deg, #102a71 0%, #0f172a 100%);
+	border-radius: 16px;
+	box-shadow: 0 14px 30px rgba(16, 42, 113, 0.22);
+	display: flex;
+	gap: 16px;
+	padding: 22px 24px;
+}
+
+.usersHeaderIcon {
+	align-items: center;
+	background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+	border-radius: 14px;
+	box-shadow: 0 8px 18px rgba(249, 115, 22, 0.35);
+	color: #ffffff;
+	display: inline-flex;
+	flex-shrink: 0;
+	height: 52px;
+	justify-content: center;
+	width: 52px;
+}
+
+.usersHeaderText {
+	flex: 1;
+	min-width: 0;
 }
 
 .usersTitle {
-	font-size: 18px;
-	font-weight: 500;
+	color: #ffffff;
+	font-size: 1.5rem;
+	font-weight: 800;
 	margin: 0;
 }
 
 .usersSubtitle {
+	color: rgba(226, 232, 240, 0.85);
+	font-size: 0.95rem;
 	margin: 4px 0 0;
-	font-size: 13px;
-	color: #667085;
 }
 
 .usersInfo {
@@ -113,15 +139,32 @@
 }
 
 .usersCreateBtn {
-	background: #1d4ed8;
-	border-color: #1d4ed8;
+	background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+	border-color: transparent;
+	box-shadow: 0 8px 18px rgba(29, 78, 216, 0.25);
 	color: #ffffff;
 }
 
 .usersCreateBtn:hover {
-	background: #1e40af;
-	border-color: #1e40af;
-	box-shadow: 0 8px 18px rgba(29, 78, 216, 0.22);
+	box-shadow: 0 10px 22px rgba(29, 78, 216, 0.32);
+	transform: translateY(-1px);
+}
+
+.usersHeader .usersCreateBtn {
+	min-height: 42px;
+	padding: 0 18px;
+}
+
+.usersHeader .usersCreateBtn--secondary {
+	background: rgba(255, 255, 255, 0.12);
+	border-color: rgba(255, 255, 255, 0.3);
+	box-shadow: none;
+	color: #ffffff;
+}
+
+.usersHeader .usersCreateBtn--secondary:hover {
+	background: rgba(255, 255, 255, 0.22);
+	border-color: rgba(255, 255, 255, 0.4);
 }
 
 .usersCreateBtn--secondary,
@@ -275,9 +318,12 @@
 		padding: 12px;
 	}
 
+	.usersContainer {
+		padding: 16px;
+	}
+
 	.usersHeader {
-		align-items: flex-start;
-		flex-direction: column;
+		flex-wrap: wrap;
 	}
 }
 

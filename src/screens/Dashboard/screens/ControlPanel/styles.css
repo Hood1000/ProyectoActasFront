@@ -54,31 +54,46 @@
 }
 
 .cp-manageUsersBtn {
-  align-self: flex-start;
-  background: linear-gradient(to right bottom, #00c8ff, #5533ff);
-  height: auto;
-  border: none;
-  border-radius: 8px;
-  display: flex;
-  gap: 8px;
   align-items: center;
-  justify-content: center;
+  align-self: flex-start;
+  background: linear-gradient(135deg, #102a71 0%, #1d4ed8 100%);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(16, 42, 113, 0.25);
+  color: #ffffff;
   cursor: pointer;
-  font-size: 18px;
-  padding: 16px 8px;
-  transition: all 0.45s ease-in-out;
+  display: flex;
+  font-size: 15px;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 20px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
 
-  &:hover {
-    background: linear-gradient(to right bottom, #00b0e0, #2c6);
-    box-shadow: 1px 4px 12px inset rgba(18, 52, 221, 0.5);
-    transition: all 0.4s ease-in-out;
-  }
+.cp-manageUsersBtn:hover:not(:disabled) {
+  box-shadow: 0 12px 24px rgba(16, 42, 113, 0.32);
+  transform: translateY(-1px);
+}
 
-  &:active {
-    background: linear-gradient(to right bottom, #00a0c0, #1d4ed8);
-    box-shadow: 1px 4px 12px inset rgba(68, 96, 238, 0.6);
-    transition: all 0.3s ease-in-out;
-  }
+.cp-manageUsersBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.cp-manageUsersBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* Cierre anual: acción de alto impacto con el acento naranja del menú */
+.cp-manageUsersBtn--accent {
+  background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+  box-shadow: 0 8px 18px rgba(249, 115, 22, 0.3);
+}
+
+.cp-manageUsersBtn--accent:hover:not(:disabled) {
+  box-shadow: 0 12px 24px rgba(249, 115, 22, 0.38);
 }
 
 .cp-adminActions {

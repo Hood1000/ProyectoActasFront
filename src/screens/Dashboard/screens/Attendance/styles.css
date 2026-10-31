@@ -1,25 +1,42 @@
 .attWorkspace { min-width: 0; width: 100%; }
-.attViews { border-bottom: 1px solid #e2e8f0; display: flex; gap: 16px; padding: 16px 24px 0; }
-.attViews button { background: transparent; border: 0; border-bottom: 3px solid transparent; color: #64748b; cursor: pointer; font: inherit; padding: 12px 0; }
-.attViews button[aria-selected="true"] { border-bottom-color: #2563eb; color: #1d4ed8; }
+/* Pestañas tipo píldora, igual que en Inasistencias */
+.attViews { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 999px; display: flex; flex-wrap: wrap; gap: 4px; margin: 20px auto 0; padding: 4px; width: fit-content; }
+.attViews button { background: transparent; border: 0; border-radius: 999px; color: #475569; cursor: pointer; font: inherit; font-size: .9rem; font-weight: 600; padding: 8px 18px; transition: background .15s, color .15s; }
+.attViews button:hover:not([aria-selected="true"]) { background: #e2e8f0; color: #0f172a; }
+.attViews button[aria-selected="true"] { background: linear-gradient(135deg, #102a71 0%, #1d4ed8 100%); box-shadow: 0 6px 14px rgba(16, 42, 113, 0.25); color: #ffffff; }
 .attPage {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  max-width: 920px;
-  padding: 2rem 2.5rem;
+  padding: 24px;
   width: 100%;
 }
 
 .attHeader {
-  align-items: flex-start;
-  display: flex;
+  align-items: center;
+  display: grid;
   gap: 12px;
-  justify-content: space-between;
+  grid-template-columns: 1fr minmax(0, max-content) 1fr;
+}
+
+/* Título centrado; las acciones quedan a la derecha */
+.attHeader > div:first-child {
+  grid-column: 2;
+  text-align: center;
+}
+
+.attHeader > .attIconBtn {
+  grid-column: 3;
+  justify-self: end;
+}
+
+.attViews {
+  justify-content: center;
 }
 
 .attHeader h2 {
-  color: #0f172a;
+  color: #102a71;
   font-size: 1.75rem;
   font-weight: 800;
   margin: 0 0 6px;
@@ -73,26 +90,112 @@
   color: #166534;
 }
 
+/* Barra de la reunión: selector a la izquierda, datos de la reunión elegida a la derecha */
 .attToolbar {
+  align-items: center;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f8ff 100%);
+  border: 1px solid #dbe4fa;
+  border-left: 5px solid #1d4ed8;
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(16, 42, 113, 0.06);
   display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  padding: 14px 18px;
+}
+
+.attToolbarIcon {
+  align-items: center;
+  background: linear-gradient(135deg, #102a71 0%, #1d4ed8 100%);
+  border-radius: 12px;
+  color: #ffffff;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.attToolbarField {
+  display: flex;
+  flex: 1 1 320px;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
-.attToolbar label {
-  color: #334155;
-  font-size: 0.84rem;
+.attToolbarField label {
+  align-items: baseline;
+  color: #102a71;
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 700;
+  gap: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.attToolbarField label small {
+  color: #64748b;
+  font-size: 0.72rem;
   font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
-.attToolbar select {
+.attToolbarField select {
   background: #ffffff;
-  border: 1px solid #d1d5db;
+  border: 1px solid #c7d4f2;
   border-radius: 10px;
   color: #0f172a;
+  cursor: pointer;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   padding: 10px 12px;
+  width: 100%;
+}
+
+.attToolbarField select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  outline: none;
+}
+
+.attToolbarMeta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attMeetingStatus {
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 5px 12px;
+  text-transform: uppercase;
+}
+
+.attMeetingStatus--en_curso { background: #dcfce7; color: #166534; }
+.attMeetingStatus--programada { background: #fff7ed; color: #c2410c; }
+
+.attMetaItem {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  color: #334155;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 6px;
+  padding: 5px 12px;
+}
+
+.attMetaItem svg {
+  color: #1d4ed8;
 }
 
 .attSummary {
@@ -386,6 +489,18 @@
 @media (max-width: 640px) {
   .attPage {
     padding: 1.25rem 1rem;
+  }
+
+  .attHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .attHeader > div:first-child {
+    grid-column: 1;
+  }
+
+  .attHeader > .attIconBtn {
+    grid-column: 2;
   }
 
   .attActions {

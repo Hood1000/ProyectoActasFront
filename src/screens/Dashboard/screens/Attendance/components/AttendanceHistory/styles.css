@@ -1,19 +1,47 @@
 .attendanceHistory { display: flex; flex-direction: column; gap: 20px; min-width: 0; padding: 24px; }
 .attendanceHistoryHeader, .attendanceHistoryTitle { align-items: center; display: flex; gap: 12px; }
-.attendanceHistoryHeader { justify-content: space-between; }
-.attendanceHistory h2 { color: #0f172a; font-size: 1.4rem; margin: 0; overflow-wrap: anywhere; }
+.attendanceHistoryHeader { display: grid; grid-template-columns: 1fr minmax(0, max-content) 1fr; }
+.attendanceHistoryHeader > .attendanceHistoryTitle { grid-column: 2; justify-content: center; text-align: center; }
+.attendanceHistoryHeader > .attendanceHistoryActions { grid-column: 3; }
+@media (max-width: 760px) {
+  .attendanceHistoryHeader { grid-template-columns: 1fr; }
+  .attendanceHistoryHeader > .attendanceHistoryTitle, .attendanceHistoryHeader > .attendanceHistoryActions { grid-column: 1; justify-content: center; }
+}
+.attendanceHistoryActions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.attendanceHistoryActions .attBtn { align-items: center; display: inline-flex; gap: 6px; }
+.attendanceHistory h2 { color: #102a71; font-size: 1.5rem; font-weight: 800; margin: 0; overflow-wrap: anywhere; }
 .attendanceHistoryTitle span { color: #64748b; font-size: .88rem; }
-.attendanceHistoryFilters { display: flex; flex-wrap: wrap; gap: 12px; }
-.attendanceHistoryFilters label { color: #475569; display: flex; flex: 1 1 160px; flex-direction: column; font-size: .85rem; gap: 6px; min-width: 0; }
-.attendanceHistoryFilters input, .attendanceHistoryFilters select { background: white; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a; font: inherit; min-height: 40px; min-width: 0; padding: 8px; width: 100%; }
+/* Filtros en una barra con el mismo estilo que el selector de reunión */
+.attendanceHistoryFilters { background: linear-gradient(135deg, #ffffff 0%, #f5f8ff 100%); border: 1px solid #dbe4fa; border-left: 5px solid #1d4ed8; border-radius: 14px; box-shadow: 0 6px 16px rgba(16, 42, 113, 0.06); display: flex; flex-wrap: wrap; gap: 12px 16px; padding: 14px 18px; }
+.attendanceHistoryFilters label { color: #102a71; display: flex; flex: 1 1 160px; flex-direction: column; font-size: .75rem; font-weight: 700; gap: 6px; letter-spacing: .04em; min-width: 0; text-transform: uppercase; }
+.attendanceHistoryFilters input, .attendanceHistoryFilters select { background: white; border: 1px solid #c7d4f2; border-radius: 10px; color: #0f172a; font: inherit; font-size: .92rem; font-weight: 600; letter-spacing: 0; min-height: 40px; min-width: 0; padding: 8px 12px; text-transform: none; width: 100%; }
+.attendanceHistoryFilters input:focus, .attendanceHistoryFilters select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); outline: none; }
 .attendanceHistoryFilters .attendanceHistorySearch { flex-grow: 2; }
-.attendanceHistoryTotals { border-block: 1px solid #e2e8f0; display: grid; gap: 16px; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0; padding: 16px 0; }
-.attendanceHistoryTotals dt { color: #64748b; font-size: .8rem; }
-.attendanceHistoryTotals dd { color: #0f172a; font-size: 1.15rem; font-weight: 700; margin: 6px 0 0; }
-.attendanceHistoryTableWrap { overflow-x: auto; }
+/* Totales del docente: mismos colores que los contadores del registro */
+.attendanceHistoryTotals { display: grid; gap: 10px; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0; }
+.attendanceHistoryTotals > div { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; border-top: 4px solid #94a3b8; padding: 12px 14px; }
+.attendanceHistoryTotals dt { color: #64748b; font-size: .72rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.attendanceHistoryTotals dd { color: #0f172a; font-size: 1.5rem; font-weight: 800; margin: 4px 0 0; }
+.attendanceHistoryTotals > div:nth-child(1) { border-top-color: #22c55e; }
+.attendanceHistoryTotals > div:nth-child(1) dd { color: #15803d; }
+.attendanceHistoryTotals > div:nth-child(2) { border-top-color: #ef4444; }
+.attendanceHistoryTotals > div:nth-child(2) dd { color: #b91c1c; }
+.attendanceHistoryTotals > div:nth-child(3) { border-top-color: #f59e0b; }
+.attendanceHistoryTotals > div:nth-child(3) dd { color: #b45309; }
+.attendanceHistoryTotals > div:nth-child(4) { border-top-color: #102a71; }
+.attendanceHistoryTotals > div:nth-child(5) { background: linear-gradient(135deg, #102a71 0%, #1d4ed8 100%); border: 0; }
+.attendanceHistoryTotals > div:nth-child(5) dt { color: rgba(226, 232, 240, 0.85); }
+.attendanceHistoryTotals > div:nth-child(5) dd { color: #ffffff; }
+/* Tabla con cabecera azul marino y filas alternas */
+.attendanceHistoryTableWrap { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05); overflow-x: auto; }
 .attendanceHistoryTable { border-collapse: collapse; font-size: .88rem; min-width: 640px; width: 100%; }
-.attendanceHistoryTable th { background: #f1f5f9; color: #475569; font-size: .78rem; text-align: left; }
+.attendanceHistoryTable th { background: linear-gradient(135deg, #102a71 0%, #1e3a8a 100%); color: #ffffff; font-size: .75rem; letter-spacing: .04em; text-align: left; text-transform: uppercase; }
+.attendanceHistoryTable tbody tr:nth-child(even) { background: #f8fafc; }
+.attendanceHistoryTable tbody tr:hover { background: #eff6ff; }
+.attendanceHistoryTable td strong { color: #102a71; }
+.attendanceHistoryTable .attIconBtn { border-color: #c7d4f2; color: #1d4ed8; }
+.attendanceHistoryTable .attIconBtn:hover { background: #1d4ed8; border-color: #1d4ed8; color: #ffffff; }
 .attendanceHistoryTable td, .attendanceHistoryTable th { border-bottom: 1px solid #e2e8f0; padding: 12px; }
 .attendanceHistoryTable td { color: #334155; max-width: 320px; overflow-wrap: anywhere; }
 .attendanceHistoryTable small { color: #64748b; display: block; margin-top: 4px; }
-@media (max-width: 680px) { .attendanceHistory { padding: 16px; } .attendanceHistoryTotals { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 680px) { .attendanceHistory { padding: 16px; } .attendanceHistoryTotals { grid-template-columns: repeat(2, minmax(0, 1fr)); } .attendanceHistoryTotals > div:nth-child(5) { grid-column: 1 / -1; } }
