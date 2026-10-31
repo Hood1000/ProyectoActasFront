@@ -1,0 +1,35 @@
+.forgotPasswordPage {
+  padding: 24px 12px;
+  width: 100%;
+}
+
+.forgotPasswordPage .titleLogin {
+  font-size: 1.5rem;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.forgotPasswordPage .loginInput {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+}
+
+.forgotPasswordPage .loginHeader img {
+  align-self: center;
+}
+
+.forgotPasswordBack {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.9rem;
+  gap: 8px;
+}
+
+.forgotPasswordBack svg {
+  flex-shrink: 0;
+}
+
+.forgotPasswordPage .loginSuccess {
+  margin: 0;
+}

@@ -3,6 +3,8 @@ import { useAuth } from "../../context/AuthContext";
 
 import Dashboard from "../../screens/Dashboard";
 import Login from "../../screens/Dashboard/components/Login";
+import ForgotPassword from "../../screens/Auth/ForgotPassword";
+import ResetPassword from "../../screens/Auth/ResetPassword";
 import ControlPanel from "../../screens/Dashboard/screens/ControlPanel";
 import ControlActas from "../../screens/Dashboard/screens/ControlActas";
 import Users from "../../screens/Dashboard/screens/Users";
@@ -34,6 +36,8 @@ const ContenRoutes = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route element={<ForgotPassword />} path="/recuperar-contrasena" />
+        <Route element={<ResetPassword />} path="/restablecer-contrasena" />
         <Route
           path="/dashboard/*"
           element={
