@@ -3,7 +3,9 @@
   flex-direction: column;
   gap: 16px;
   min-height: 0;
+  min-width: 0;
   padding: 16px;
+  width: 100%;
 }
 
 .sanctionsHeader {
@@ -70,13 +72,27 @@
 .sanctionsCard {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border-radius: 8px;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
   display: flex;
   flex-direction: column;
   gap: 14px;
   padding: 16px;
+  overflow-wrap: anywhere;
 }
+
+.sanctionsTabs { border-bottom: 1px solid #e2e8f0; display: flex; gap: 16px; }
+.sanctionsTabs button { background: transparent; border: 0; border-bottom: 3px solid transparent; color: #64748b; cursor: pointer; font: inherit; padding: 12px 0; }
+.sanctionsTabs button[aria-selected="true"] { border-bottom-color: #2563eb; color: #1d4ed8; }
+.sanctionsYear { color: #475569; display: flex; flex-direction: column; font-size: .85rem; gap: 6px; max-width: 220px; }
+.sanctionsYear select { border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; min-height: 40px; padding: 8px; }
+.sanctionsAbsences { list-style: none; margin: 0; padding: 0; }
+.sanctionsAbsences li { border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; font-size: .88rem; gap: 8px; justify-content: space-between; padding: 10px 0; }
+.sanctionsAbsences time { color: #64748b; }
+.sanctionsBtn { align-items: center; display: inline-flex; gap: 8px; justify-content: center; text-decoration: none; }
+.sanctionsBtn:disabled { cursor: not-allowed; opacity: .6; }
+.sanctionsIssueForm { border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px; padding-top: 16px; }
+.sanctionsPreview { display: -webkit-box; line-clamp: 3; overflow: hidden; white-space: pre-wrap; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 
 .sanctionsCardHead {
   align-items: flex-start;

@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { IconCircleCheck, IconCircleX, IconFileCertificate, IconRefresh } from "@tabler/icons-react";
 import meetingsService from "../../../../api/services/meetingsService";
+import { useSearchParams } from "react-router-dom";
+import { useAuth } from "../../../../context/AuthContext";
+import AttendanceHistory from "./components/AttendanceHistory";
 import { getAvatarColor, getInitials, ROLE_LABELS } from "../../../../utils/people";
 import "./styles.css";
 
@@ -33,7 +36,7 @@ const canFinalize = (meeting) =>
   !meeting.attendanceFinalized &&
   Date.now() >= new Date(meeting.attendanceClosesAt).getTime();
 
-const Attendance = () => {
+const AttendanceRegistration = () => {
   const [meetings, setMeetings] = useState([]);
   const [selectedId, setSelectedId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -342,6 +345,20 @@ const Attendance = () => {
       )}
     </section>
   );
+};
+
+const Attendance = () => {
+  const { user } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const isAdmin = user?.role === "ADMIN";
+  const historyVisible = isAdmin && params.get("view") === "history";
+  return <div className="attWorkspace">
+    {isAdmin && <div aria-label="Vistas de asistencia" className="attViews" role="tablist">
+      <button aria-selected={!historyVisible} onClick={() => setParams({ view: "registration" })} role="tab" type="button">Registro por reunión</button>
+      <button aria-selected={historyVisible} onClick={() => setParams({ view: "history" })} role="tab" type="button">Historial por docente</button>
+    </div>}
+    {historyVisible ? <AttendanceHistory /> : <AttendanceRegistration />}
+  </div>;
 };
 
 export default Attendance;

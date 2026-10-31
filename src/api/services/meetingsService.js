@@ -177,6 +177,21 @@ const finalizeAttendance = async (meetingId) => {
   return resp.data || resp;
 };
 
+const getAttendanceSummary = async (params, config = {}) =>
+  (await axiosClient.get('/meetings/attendance/history', { ...config, params })).data;
+
+const getTeacherAttendanceHistory = async (teacherId, params, config = {}) =>
+  (await axiosClient.get(`/meetings/attendance/history/${teacherId}`, { ...config, params })).data;
+
+const listAbsenceCases = async (params, config = {}) =>
+  (await axiosClient.get('/meetings/absence-cases', { ...config, params })).data;
+
+const listWarnings = async (params, config = {}) =>
+  (await axiosClient.get('/meetings/warnings', { ...config, params })).data;
+
+const issueWarning = async (teacherId, payload) =>
+  (await axiosClient.post(`/meetings/absence-cases/${teacherId}/warning`, payload)).data;
+
 export default {
   cancel,
   closeAnnualYear,
@@ -190,15 +205,20 @@ export default {
   downloadAnnualReportPdf,
   finalizeAttendance,
   getAnnualArchiveData,
+  getAttendanceSummary,
   getAvailableAgenda,
   getById,
   getEvidenceUrl,
+  getTeacherAttendanceHistory,
+  issueWarning,
+  listAbsenceCases,
   listAbsenceAlerts,
   listAnnualArchives,
   listMeetingChatMessages,
   listMeetingPolls,
   list,
   listNotifications,
+  listWarnings,
   markAllNotificationsAsRead,
   markAttendance,
   markNotificationAsRead,

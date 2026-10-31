@@ -95,12 +95,6 @@ const Login = () => {
           </div>
 
           <div className="loginInlineLinkRow">
-            <Link className="loginInlineLink" to="/recuperar-contrasena">
-              Olvidé mi contraseña
-            </Link>
-          </div>
-
-          <div className="loginInlineLinkRow">
             <span className="loginInlineLinkLabel">
               El registro de usuarios lo realiza la administración.
             </span>
@@ -111,6 +105,12 @@ const Login = () => {
           <button className="loginButton" disabled={isLoading} type="submit">
             {isLoading ? "Ingresando..." : "Iniciar Sesión"}
           </button>
+
+          <div className="loginInlineLinkRow loginRecoveryLinkRow">
+            <Link className="loginInlineLink" to="/recuperar-contrasena">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
         </form>
       </div>
     </div>

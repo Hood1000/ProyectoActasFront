@@ -1,3 +1,7 @@
+.attWorkspace { min-width: 0; width: 100%; }
+.attViews { border-bottom: 1px solid #e2e8f0; display: flex; gap: 16px; padding: 16px 24px 0; }
+.attViews button { background: transparent; border: 0; border-bottom: 3px solid transparent; color: #64748b; cursor: pointer; font: inherit; padding: 12px 0; }
+.attViews button[aria-selected="true"] { border-bottom-color: #2563eb; color: #1d4ed8; }
 .attPage {
   display: flex;
   flex-direction: column;

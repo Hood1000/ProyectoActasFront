@@ -1,166 +1,109 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { IconFileDescription, IconHistory, IconRefresh } from "@tabler/icons-react";
 import meetingsService from "../../../../api/services/meetingsService";
+import Pagination from "../../../../components/Pagination";
+import { useAuth } from "../../../../context/AuthContext";
+import WarningDocument from "./components/WarningDocument";
+import { currentYear, formatDate, requestError } from "./utils";
 import "./styles.css";
 
-const FILTERS = [
-  { label: "Pendientes", value: "PENDIENTE" },
-  { label: "Revisadas", value: "REVISADA" },
-  { label: "Descartadas", value: "DESCARTADA" },
-  { label: "Todas", value: "ALL" },
-];
-
-const formatDate = (value) => {
-  if (!value) return "No disponible";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "No disponible";
-  return parsed.toLocaleString("es-VE", { dateStyle: "medium", timeStyle: "short" });
-};
-
 const Sanctions = () => {
-  const [alerts, setAlerts] = React.useState([]);
-  const [filter, setFilter] = React.useState("PENDIENTE");
-  const [notesById, setNotesById] = React.useState({});
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [isSubmittingId, setIsSubmittingId] = React.useState("");
-  const [message, setMessage] = React.useState("");
+  const { user } = useAuth();
+  const isTeacher = user?.role === "DOCENTE";
+  const canIssue = user?.role === "SECRETARIO";
+  const [tab, setTab] = useState(isTeacher ? "warnings" : "cases");
+  const [year, setYear] = useState(currentYear);
+  const [page, setPage] = useState(1);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [revision, setRevision] = useState(0);
+  const [selectedCase, setSelectedCase] = useState("");
+  const [content, setContent] = useState("");
+  const [issuing, setIssuing] = useState(false);
+  const [document, setDocument] = useState(null);
 
-  const loadAlerts = React.useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await meetingsService.listAbsenceAlerts();
-      setAlerts(Array.isArray(data) ? data : []);
-      setMessage("");
-    } catch {
-      setMessage("No se pudo cargar el seguimiento de inasistencias.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setData(null);
+    setError("");
+    const params = { page, limit: 20, ...(year ? { year } : {}) };
+    const load = tab === "cases" && !isTeacher
+      ? meetingsService.listAbsenceCases(params, { signal: controller.signal })
+      : meetingsService.listWarnings(params, { signal: controller.signal });
+    load.then((result) => { if (!controller.signal.aborted) setData(result); })
+      .catch((failure) => { if (!controller.signal.aborted) setError(requestError(failure)); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [tab, year, page, revision, isTeacher]);
 
-  React.useEffect(() => {
-    loadAlerts();
-  }, [loadAlerts]);
-
-  const filteredAlerts = React.useMemo(() => {
-    if (filter === "ALL") return alerts;
-    return alerts.filter((alert) => alert.reviewStatus === filter);
-  }, [alerts, filter]);
-
-  const handleNoteChange = (alertId, value) => {
-    setNotesById((current) => ({ ...current, [alertId]: value }));
+  const changeTab = (next) => {
+    setTab(next); setPage(1); setSelectedCase(""); setContent("");
+    if (next === "cases" && !year) setYear(currentYear());
   };
 
-  const handleReview = async (alertId, status) => {
-    setIsSubmittingId(alertId);
-    setMessage("");
+  const issue = async (event, item) => {
+    event.preventDefault();
+    if (issuing) return;
+    setIssuing(true);
+    setError("");
     try {
-      const updated = await meetingsService.reviewAbsenceAlert(alertId, {
-        reviewNotes: notesById[alertId]?.trim() || undefined,
-        status,
-      });
-
-      setAlerts((current) => current.map((item) => (item.id === alertId ? updated : item)));
-      setMessage("La alerta fue actualizada correctamente.");
-    } catch (err) {
-      setMessage(err?.response?.data?.message || "No se pudo actualizar la alerta.");
-    } finally {
-      setIsSubmittingId("");
-    }
+      const result = await meetingsService.issueWarning(item.teacher.id, { year: Number(year), content: content.trim() });
+      setDocument(result); setSelectedCase(""); setContent(""); setRevision((value) => value + 1);
+    } catch (failure) { setError(requestError(failure)); }
+    finally { setIssuing(false); }
   };
 
   return (
-    <section className="sanctionsPage">
+    <section aria-busy={loading} className="sanctionsPage">
       <header className="sanctionsHeader">
-        <div>
-          <h2>Sanciones y Faltas</h2>
-          <p>Revisión institucional de alertas por inasistencia docente.</p>
-        </div>
-        <div className="sanctionsFilters">
-          {FILTERS.map((item) => (
-            <button
-              className={`sanctionsFilterBtn ${filter === item.value ? "active" : ""}`}
-              key={item.value}
-              onClick={() => setFilter(item.value)}
-              type="button"
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <h2>{isTeacher ? "Mis amonestaciones" : "Inasistencias"}</h2>
+        <button aria-label="Actualizar inasistencias" className="attIconBtn" disabled={issuing} onClick={() => setRevision((value) => value + 1)} title="Actualizar" type="button"><IconRefresh size={18} /></button>
       </header>
-
-      {message && <div className="sanctionsMessage">{message}</div>}
-      {isLoading && <div className="sanctionsMessage">Cargando alertas...</div>}
-
-      {!isLoading && filteredAlerts.length === 0 && (
-        <div className="sanctionsEmpty">No hay alertas para el filtro seleccionado.</div>
-      )}
-
-      {!isLoading && filteredAlerts.length > 0 && (
+      {!isTeacher && <div aria-label="Seguimiento de inasistencias" className="sanctionsTabs" role="tablist">
+        <button aria-selected={tab === "cases"} disabled={issuing} onClick={() => changeTab("cases")} role="tab" type="button">Casos con 3 faltas o más</button>
+        <button aria-selected={tab === "warnings"} disabled={issuing} onClick={() => changeTab("warnings")} role="tab" type="button">Amonestaciones emitidas</button>
+      </div>}
+      <label className="sanctionsYear">Año
+        <select disabled={issuing} onChange={(event) => { setYear(event.target.value); setPage(1); setSelectedCase(""); }} value={year}>
+          {tab === "warnings" && <option value="">Todos los años</option>}
+          {Array.from({ length: currentYear() - 1999 }, (_, index) => currentYear() - index).map((value) => <option key={value} value={value}>{value}</option>)}
+        </select>
+      </label>
+      {error && <div className="attMessage attMessage--error" role="alert">{error}</div>}
+      {loading && <p role="status">Cargando registros...</p>}
+      {!loading && data?.items.length === 0 && <p className="sanctionsEmpty">{tab === "cases" ? "No hay docentes con tres faltas injustificadas en este año." : "No hay amonestaciones emitidas para este período."}</p>}
+      {!loading && data && <>
         <div className="sanctionsList">
-          {filteredAlerts.map((alert) => {
-            const isPending = alert.reviewStatus === "PENDIENTE";
-            return (
-              <article className="sanctionsCard" key={alert.id}>
-                <div className="sanctionsCardHead">
-                  <div>
-                    <h3>{alert.teacher?.name || "Docente"}</h3>
-                    <p>{alert.summary}</p>
-                  </div>
-                  <span className={`sanctionsStatus sanctionsStatus--${(alert.reviewStatus || "").toLowerCase()}`}>
-                    {alert.reviewStatus}
-                  </span>
-                </div>
-
-                <div className="sanctionsMetaGrid">
-                  <span>Año: {alert.academicYear}</span>
-                  <span>Inasistencias: {alert.absencesCount}</span>
-                  <span>Notificada: {formatDate(alert.notifiedAt)}</span>
-                  <span>Reunión: {alert.meeting?.title || "No disponible"}</span>
-                  <span>Fecha reunión: {formatDate(alert.meeting?.date)}</span>
-                  <span>Revisó: {alert.reviewedBy?.name || "Pendiente"}</span>
-                </div>
-
-                <textarea
-                  className="sanctionsNotes"
-                  disabled={!isPending}
-                  onChange={(event) => handleNoteChange(alert.id, event.target.value)}
-                  placeholder="Observación: reposo médico, causa mayor o nota de seguimiento"
-                  rows={3}
-                  value={isPending ? (notesById[alert.id] || "") : (alert.reviewNotes || "")}
-                />
-
-                {isPending ? (
-                  <div className="sanctionsActions">
-                    <button
-                      className="sanctionsBtn sanctionsBtn--ghost"
-                      disabled={isSubmittingId === alert.id}
-                      onClick={() => handleReview(alert.id, "DESCARTADA")}
-                      type="button"
-                    >
-                      {isSubmittingId === alert.id ? "Guardando..." : "Descartar"}
-                    </button>
-                    <button
-                      className="sanctionsBtn sanctionsBtn--primary"
-                      disabled={isSubmittingId === alert.id}
-                      onClick={() => handleReview(alert.id, "REVISADA")}
-                      type="button"
-                    >
-                      {isSubmittingId === alert.id ? "Guardando..." : "Marcar revisada"}
-                    </button>
-                  </div>
-                ) : (
-                  <p className="sanctionsReviewedText">
-                    {alert.reviewedAt
-                      ? `Actualizada el ${formatDate(alert.reviewedAt)}.`
-                      : "Sin fecha de revisión registrada."}
-                  </p>
-                )}
-              </article>
-            );
-          })}
+          {data.items.map((item) => tab === "cases" ? <article className="sanctionsCard" key={item.teacher.id}>
+            <header className="sanctionsCardHead"><div><h3>{item.teacher.name}</h3><p>{item.absencesCount} inasistencias injustificadas · {year}{!item.teacher.isActive ? " · Docente inactivo" : ""}</p></div>
+              <span className={`sanctionsStatus ${item.warning ? "sanctionsStatus--revisada" : "sanctionsStatus--pendiente"}`}>{item.warning ? "Emitida" : "Sin amonestación"}</span>
+            </header>
+            <ul className="sanctionsAbsences">{item.absences.map((absence) => <li key={absence.id}><strong>{absence.meeting.title}</strong><time dateTime={absence.meeting.date}>{formatDate(absence.meeting.date)}</time></li>)}</ul>
+            <div className="sanctionsActions">
+              {user?.role === "ADMIN" && <Link className="sanctionsBtn sanctionsBtn--ghost" to={`/dashboard/attendance?view=history&teacherId=${item.teacher.id}&year=${year}`}><IconHistory size={17} />Ver historial</Link>}
+              {item.warning ? <button className="sanctionsBtn sanctionsBtn--ghost" onClick={() => setDocument(item.warning)} type="button"><IconFileDescription size={17} />Ver amonestación</button>
+                : canIssue && <button className="sanctionsBtn sanctionsBtn--primary" disabled={issuing} onClick={() => { setSelectedCase(item.teacher.id); setContent(""); }} type="button"><IconFileDescription size={17} />Preparar amonestación</button>}
+            </div>
+            {canIssue && !item.warning && selectedCase === item.teacher.id && <form className="sanctionsIssueForm" onSubmit={(event) => issue(event, item)}>
+              <label htmlFor={`warning-${item.teacher.id}`}>Motivo y acción realizada</label>
+              <textarea className="sanctionsNotes" disabled={issuing} id={`warning-${item.teacher.id}`} maxLength={4000} minLength={20} onChange={(event) => setContent(event.target.value)} required rows={5} value={content} />
+              <div className="sanctionsActions">
+                <button className="sanctionsBtn sanctionsBtn--ghost" disabled={issuing} onClick={() => setSelectedCase("")} type="button">Cancelar</button>
+                <button className="sanctionsBtn sanctionsBtn--primary" disabled={issuing || content.trim().length < 20} type="submit"><IconFileDescription size={17} />{issuing ? "Emitiendo..." : "Emitir y guardar"}</button>
+              </div>
+            </form>}
+          </article> : <article className="sanctionsCard" key={item.id}>
+            <header className="sanctionsCardHead"><div><h3>{item.evidence?.teacher?.name || item.teacher.name}</h3><p>{item.academicYear} · {item.absencesCount} faltas al emitir · {formatDate(item.issuedAt)}</p></div><span className="sanctionsStatus sanctionsStatus--revisada">Emitida</span></header>
+            <p className="sanctionsPreview">{item.summary}</p>
+            <div className="sanctionsActions"><button className="sanctionsBtn sanctionsBtn--ghost" onClick={() => setDocument(item)} type="button"><IconFileDescription size={17} />Ver amonestación</button></div>
+          </article>)}
         </div>
-      )}
+        <Pagination currentPage={page} itemLabel={tab === "cases" ? "casos" : "amonestaciones"} onPageChange={setPage} pageSize={20} totalItems={data.total} />
+      </>}
+      {document && <WarningDocument onClose={() => setDocument(null)} warning={document} />}
     </section>
   );
 };

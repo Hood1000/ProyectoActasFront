@@ -169,6 +169,11 @@
   color: #667085;
 }
 
+.loginRecoveryLinkRow {
+  justify-content: center;
+  text-align: center;
+}
+
 .loginInlineLink {
   color: #0b5fff;
   font-weight: 600;

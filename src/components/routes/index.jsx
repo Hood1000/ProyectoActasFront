@@ -93,7 +93,7 @@ const ContenRoutes = () => {
           <Route
             path="sanctions"
             element={
-              <RequireRole allowedRoles={["ADMIN", "SECRETARIO"]}>
+              <RequireRole allowedRoles={["ADMIN", "SECRETARIO", "DOCENTE"]}>
                 <Sanctions />
               </RequireRole>
             }

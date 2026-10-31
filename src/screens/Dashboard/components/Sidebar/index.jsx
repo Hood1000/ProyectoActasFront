@@ -23,7 +23,7 @@ const Sidebar = ({ isCollapsed = false, isMobileOpen = false, onCloseMobile, onT
     canProposePoints && { icon: IconClipboardList, label: "Agenda", to: "/dashboard/agenda" },
     { icon: IconGavel, label: "Votaciones", to: "/dashboard/voting" },
     canManageMeetings && { icon: IconListCheck, label: "Asistencia", to: "/dashboard/attendance" },
-    canManageMeetings && { icon: IconUserX, label: "Inasistencias", to: "/dashboard/sanctions" },
+    { icon: IconUserX, label: canManageMeetings ? "Inasistencias" : "Mis amonestaciones", to: "/dashboard/sanctions" },
   ].filter(Boolean);
 
   const handleLogout = () => {
