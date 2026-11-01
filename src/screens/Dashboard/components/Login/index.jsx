@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import universityLogo from "../../../../assets/universityLogo.svg";
 import { useAuth } from "../../../../context/AuthContext";
 
 import "./styles.css";
@@ -63,6 +64,13 @@ const Login = () => {
     <div className="loginPageWrapper">
       <div className="loginContainer loginActive">
         <div className="loginHeader">
+          <img
+            alt="Universidad Politécnica Territorial José Félix Ribas"
+            className="authHeaderLogo"
+            height={88}
+            src={universityLogo}
+            width={88}
+          />
           <h1 className="titleLogin">Bienvenido</h1>
           <p className="loginSubtitle">Ingresa tus credenciales para continuar</p>
         </div>

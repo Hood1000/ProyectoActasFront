@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import authService from "../../../api/services/authService";
+import universityLogo from "../../../assets/universityLogo.svg";
 import "../../Dashboard/components/Login/styles.css";
 import "./styles.css";
 
@@ -39,7 +40,13 @@ const ForgotPassword = () => {
     <main className="loginPageWrapper forgotPasswordPage">
       <section aria-labelledby="forgotPasswordTitle" className="loginContainer loginActive">
         <header className="loginHeader">
-          <img alt="Universidad Politécnica Territorial José Félix Ribas" height={72} src={`${import.meta.env.BASE_URL}favicon.svg`} width={72} />
+          <img
+            alt="Universidad Politécnica Territorial José Félix Ribas"
+            className="authHeaderLogo"
+            height={88}
+            src={universityLogo}
+            width={88}
+          />
           <h1 className="titleLogin" id="forgotPasswordTitle">Recuperar contraseña</h1>
         </header>
 

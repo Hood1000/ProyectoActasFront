@@ -43,8 +43,18 @@
 .sidebarBrandTitle {
   align-items: center;
   display: flex;
+  gap: 10px;
   margin: 0;
   min-height: 34px;
+}
+
+.sidebarBrandLogo {
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(2, 6, 23, 0.3);
+  flex: 0 0 auto;
+  height: 32px;
+  object-fit: contain;
+  width: 32px;
 }
 
 .brandText {
@@ -212,6 +222,10 @@
   width: 0;
 }
 
+.sidebar.isCollapsed .sidebarBrandTitle {
+  display: none;
+}
+
 .sidebar.isCollapsed .sidebarBrandRow {
   justify-content: center;
 }
@@ -297,6 +311,10 @@
     opacity: 1;
     pointer-events: auto;
     width: auto;
+  }
+
+  .sidebar.isCollapsed .sidebarBrandTitle {
+    display: flex;
   }
 
   .sidebar .sidebar-header,

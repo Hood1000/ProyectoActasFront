@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { IconClipboardList, IconGavel, IconListCheck, IconUserX, IconX } from "@tabler/icons-react";
+import universityLogo from "../../../../assets/universityLogo.svg";
 import { useAuth } from "../../../../context/AuthContext";
 import "./styles.css";
 
@@ -36,6 +37,13 @@ const Sidebar = ({ isCollapsed = false, isMobileOpen = false, onCloseMobile, onT
       <div className="sidebar-header">
         <div className="sidebarBrandRow">
           <h3 className="sidebarBrandTitle">
+            <img
+              alt="Universidad Politécnica Territorial José Félix Ribas"
+              className="sidebarBrandLogo"
+              height={32}
+              src={universityLogo}
+              width={32}
+            />
             <span className="brandText">UPT JFR</span>
           </h3>
           <button

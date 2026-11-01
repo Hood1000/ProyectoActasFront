@@ -12,7 +12,18 @@
   min-height: 100vh;
   width: 100vw;
   box-sizing: border-box;
-  background: var(--auth-bg-gradient);
+  background-color: #0f172a;
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.62) 0%,
+      rgba(16, 42, 113, 0.48) 50%,
+      rgba(15, 23, 42, 0.68) 100%
+    ),
+    url("../../../../assets/uptCampusBg.jpeg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   isolation: isolate;
   overflow: hidden;
   position: relative;
@@ -27,8 +38,8 @@
 .loginPageWrapper::after {
   border-radius: 50%;
   content: "";
-  filter: blur(0px);
-  opacity: 0.5;
+  filter: blur(42px);
+  opacity: 0.22;
   position: absolute;
   z-index: -1;
 }
@@ -71,7 +82,7 @@
 }
 
 .loginActive {
-  background: var(--auth-surface-color);
+  background: rgba(255, 255, 255, 0.94);
   max-width: 440px;
 }
 
@@ -96,6 +107,16 @@
   flex-direction: column;
   gap: 0.5rem;
   text-align: center;
+}
+
+.authHeaderLogo {
+  align-self: center;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14);
+  height: 88px;
+  margin-bottom: 0.25rem;
+  object-fit: contain;
+  width: 88px;
 }
 
 .titleLogin {
