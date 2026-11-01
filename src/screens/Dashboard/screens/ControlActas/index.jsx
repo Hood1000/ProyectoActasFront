@@ -1113,7 +1113,9 @@ const ControlActas = () => {
                   </span>
                 </div>
                 <h3 className="actaCardTitle">{meeting.title}</h3>
-                <span className="actaCardDate">Inicio: {formatMeetingDate(meeting.date)}</span>
+                <span className="actaCardDate">
+                  {meeting.status === "PROGRAMADA" ? "Inicia" : "Inicio"}: {formatMeetingDate(meeting.date)}
+                </span>
                 <p className="actaCardMeta">Lugar: {meeting.location || "Sin lugar"}</p>
                 <p className="actaCardMeta">Modalidad: {meeting.modality || "Sin modalidad"}</p>
                 <p className="actaCardMeta">

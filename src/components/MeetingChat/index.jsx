@@ -108,7 +108,8 @@ const MeetingChat = ({
   // por socket: el backend rechaza el envío y el chat pasa a solo lectura igual.
   const isReadOnly =
     lockedByServer || Boolean(meeting?.isClosed) || ["CANCELADA", "FINALIZADA"].includes(meeting?.status);
-  const canPost = CHAT_ROLES.includes(user?.role || "") && !isReadOnly;
+  const isMeetingNotStarted = meeting?.status === "PROGRAMADA";
+  const canPost = CHAT_ROLES.includes(user?.role || "") && !isReadOnly && !isMeetingNotStarted;
 
   useEffect(() => {
     isActiveRef.current = isActive;
@@ -421,7 +422,9 @@ const MeetingChat = ({
       ) : (
         <div className="mchatReadOnly">
           <IconLock size={16} />
-          {!isReadOnly
+          {isMeetingNotStarted
+            ? "El chat se habilitará cuando inicie la reunión."
+            : !isReadOnly
             ? "Tu rol no puede escribir en este chat."
             : isCancelled
               ? "Esta reunión fue cancelada: el chat queda como registro de solo lectura."
