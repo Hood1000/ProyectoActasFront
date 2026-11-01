@@ -113,6 +113,15 @@ const validateMeetingSchedule = (dateValue) => {
   return "";
 };
 
+const getClosedYearError = (dateValue, closedYears) => {
+  if (!dateValue || closedYears.length === 0) return "";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) return "";
+  const year = parsed.getFullYear();
+  if (!closedYears.includes(year)) return "";
+  return `No se puede crear una nueva reunión en el año lectivo ${year} porque ya se realizó el cierre anual de ese período. Selecciona una fecha de un año lectivo vigente.`;
+};
+
 const toDateTimeLocal = (value) => {
   if (!value) return "";
   const parsed = new Date(value);
@@ -151,6 +160,7 @@ const ControlActas = () => {
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [closedYears, setClosedYears] = useState([]);
 
   const [formStep, setFormStep] = useState(1);
   const [pendingPoints, setPendingPoints] = useState([]);
@@ -187,6 +197,30 @@ const ControlActas = () => {
   useEffect(() => {
     hydrateData();
   }, []);
+
+  useEffect(() => {
+    if (!canCreateMeetings || !isFormOpen || editingMeeting?.id) return undefined;
+    let isCancelled = false;
+    const loadClosedYears = async () => {
+      try {
+        const archives = await meetingsService.listAnnualArchives();
+        if (isCancelled) return;
+        setClosedYears(
+          (Array.isArray(archives) ? archives : [])
+            .map((archive) => archive?.year)
+            .filter((year) => Number.isInteger(year)),
+        );
+      } catch {
+        if (!isCancelled) {
+          setClosedYears([]);
+        }
+      }
+    };
+    loadClosedYears();
+    return () => {
+      isCancelled = true;
+    };
+  }, [canCreateMeetings, editingMeeting?.id, isFormOpen]);
 
   const searchedMeetings = useMemo(
     () => filterMeetings(meetings, listFilters),
@@ -409,6 +443,15 @@ const ControlActas = () => {
       return;
     }
 
+    if (!editingMeeting?.id) {
+      const closedYearError = getClosedYearError(meetingForm.date, closedYears);
+      if (closedYearError) {
+        setFormStep(1);
+        setErrorMsg(closedYearError);
+        return;
+      }
+    }
+
     if (!editingMeeting?.id && pendingPoints.length === 0) {
       setErrorMsg("Agrega al menos un punto a discutir antes de crear la reunión.");
       return;
@@ -458,11 +501,23 @@ const ControlActas = () => {
       await hydrateData();
       closeFormPanel();
     } catch (err) {
-      setErrorMsg(
-        err?.response?.data?.message ||
-          err?.message ||
-          "No se pudo guardar la reunión. Revisa los datos e intenta nuevamente.",
-      );
+      const responseData = err?.response?.data;
+      if (!editingMeeting?.id && responseData?.errorCode === "ACADEMIC_YEAR_CLOSED") {
+        const closedYear =
+          responseData?.details?.year ??
+          responseData?.year ??
+          new Date(meetingForm.date).getFullYear();
+        setFormStep(1);
+        setErrorMsg(
+          `No se puede crear una nueva reunión en el año lectivo ${closedYear} porque ya se realizó el cierre anual de ese período. Selecciona una fecha de un año lectivo vigente.`,
+        );
+      } else {
+        setErrorMsg(
+          responseData?.message ||
+            err?.message ||
+            "No se pudo guardar la reunión. Revisa los datos e intenta nuevamente.",
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -571,6 +626,13 @@ const ControlActas = () => {
                       setErrorMsg(scheduleError);
                       return;
                     }
+                    if (!editingMeeting?.id) {
+                      const closedYearError = getClosedYearError(meetingForm.date, closedYears);
+                      if (closedYearError) {
+                        setErrorMsg(closedYearError);
+                        return;
+                      }
+                    }
                     setErrorMsg("");
                     setFormStep(2);
                   }}
@@ -610,9 +672,14 @@ const ControlActas = () => {
                     <input
                       id="meeting-date"
                       min={currentDateTimeLocal()}
-                      onChange={(event) =>
-                        setMeetingForm((previous) => ({ ...previous, date: event.target.value }))
-                      }
+                      onChange={(event) => {
+                        const nextDate = event.target.value;
+                        setMeetingForm((previous) => ({ ...previous, date: nextDate }));
+                        if (!editingMeeting?.id) {
+                          const closedYearError = getClosedYearError(nextDate, closedYears);
+                          setErrorMsg(closedYearError);
+                        }
+                      }}
                       required
                       type="datetime-local"
                       value={meetingForm.date}
