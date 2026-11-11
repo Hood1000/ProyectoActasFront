@@ -607,7 +607,7 @@ const ControlActas = () => {
                       ? (editingMeeting
                           ? "Corrige los datos mientras la reunion siga vigente."
                           : "Registra la convocatoria y los datos base.")
-                      : "Agrega los puntos de agenda base. La lectura del acta anterior se incluye automáticamente como primer punto."}
+                      : "Agrega los puntos de agenda base. Si la reunión anterior dejó puntos pendientes, se añade automáticamente la lectura del acta anterior como primer punto."}
                   </p>
                 </div>
                 <button
