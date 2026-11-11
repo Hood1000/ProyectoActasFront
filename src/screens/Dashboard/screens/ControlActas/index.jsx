@@ -130,6 +130,10 @@ const toDateTimeLocal = (value) => {
   return local.toISOString().slice(0, 16);
 };
 
+// El input datetime-local puede entregar segundos; el paso por defecto es de un minuto
+// y el navegador bloquea el formulario si llegan distintos de cero.
+const toMinutePrecision = (value) => (value ? value.slice(0, 16) : "");
+
 const currentDateTimeLocal = () => {
   const now = new Date();
   const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
@@ -673,7 +677,7 @@ const ControlActas = () => {
                       id="meeting-date"
                       min={currentDateTimeLocal()}
                       onChange={(event) => {
-                        const nextDate = event.target.value;
+                        const nextDate = toMinutePrecision(event.target.value);
                         setMeetingForm((previous) => ({ ...previous, date: nextDate }));
                         if (!editingMeeting?.id) {
                           const closedYearError = getClosedYearError(nextDate, closedYears);
