@@ -685,6 +685,7 @@ const ControlActas = () => {
                         }
                       }}
                       required
+                      step="60"
                       type="datetime-local"
                       value={meetingForm.date}
                     />
